@@ -14,10 +14,10 @@ Use a [Java Virtual Machine](http://www.oracle.com/technetwork/java/javase/downl
 
 *Not tested with any other JVM providers but Oracle... so there is no guarantee that the software will work as expected if not using Oracle's JVM.*
 
-##Software use
+##User manual
 
 
-See the Wiki page of this project.
+See the [Wiki](https://github.com/pgdurand/BlastViewer/wiki) page of this project.
 
 
 ##License and dependencies
