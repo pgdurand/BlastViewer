@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- ============================================================= -->
+<project name="BLAST Viewer Tool" default="help" basedir=".">
+
+<property file="${basedir}/src/bzh/plealog/blastviewer/version.properties"/>
+
+<property name="pbc.libName"    value="${prg.name}" />
+<property name="pbc.LibVersion" value="${prg.version}" />
+
+<property name="compile.optimize" value="on" />
+<property name="compile.debug"    value="off" />
+
+<property name="src"     value="${basedir}/src" />
+<property name="jar"     value="${basedir}/jar" />
+
+<property name="distrib"  value="${basedir}/distrib" />
+<property name="Dlib"     value="${distrib}/lib" />
+<property name="Dsrc"     value="${distrib}/src" />
+<property name="Ddoc"     value="${distrib}/doc" />
+<property name="Ddoc.api" value="${Ddoc}/api" />
+
+<property name="pbc.libJar"  value="${distrib}/${pbc.libName}-${pbc.LibVersion}.jar"/>
+
+<path id="class.path">
+    <pathelement path="${classpath}"/>
+    <fileset dir="${jar}">
+      <include name="**/*.jar"/>
+    </fileset>
+    <pathelement location="${Dlib}"/>
+</path>
+
+<!-- ============================================================= -->
+<target name="help">
+  <echo>Ant task to handle BLAST Viewer Tool project.</echo>
+  <echo/>
+  <echo>      compile: compile the code.</echo>
+  <echo>  makedistrib: compile and make release JAR of the BLAST system.</echo>
+</target>
+
+<!-- ============================================================= -->
+<target name="prepare">
+    <delete dir="${distrib}"/>
+    <mkdir  dir="${Dlib}"/>
+    <mkdir  dir="${Dsrc}"/>
+    <mkdir  dir="${Ddoc.api}"/>
+</target>
+
+<!-- ============================================================= -->
+<target name="compile" depends="prepare">
+   <copy todir="${Dsrc}">
+      <fileset dir="${src}">
+         <include name="bzh/plealog/blastviewer/**"/>
+      </fileset>
+    </copy>
+   <javac srcdir="${Dsrc}"
+          destdir="${Dlib}"
+	        classpathref="class.path"
+          debug="${compile.debug}"
+          optimize="${compile.optimize}"
+          >
+   </javac>
+  <copy todir="${Dlib}/bzh/plealog/blastviewer/">
+    <fileset dir="${Dsrc}/bzh/plealog/blastviewer/">
+      <include name="**/*properties"/>
+      <include name="**/*messages"/>
+      <include name="**/*cfg"/>
+      <include name="**/*gif"/>
+      <include name="**/*png"/>
+    </fileset>
+  </copy>
+</target>
+
+<!-- ============================================================= -->
+<target name="makejar" depends="compile" >
+    <jar destfile="${pbc.libJar}">
+      <fileset dir="${Dlib}">
+        <include name="bzh/plealog/blastviewer/**"/>
+      </fileset>
+      <manifest>
+        <attribute name="Main-Class" value="bzh.plealog.blastviewer.BlastViewer"/>
+        <attribute name="Built-By" value="Patrick G. Durand"/>
+        <attribute name="Title" value="${prg.name}"/>
+        <attribute name="Version" value="${prg.version}"/>
+      </manifest>
+    </jar>
+	  <jar destfile="${pbc.libJar}" update="true">
+	    <zipfileset dir="${basedir}" includes="*.txt"/>
+	  </jar>
+</target>
+
+	<!-- ============================================================= -->
+	<target name="makedistrib" depends="compile" >
+	    <jar destfile="${pbc.libJar}">
+	      <fileset dir="${Dlib}">
+	        <include name="bzh/plealog/blastviewer/**"/>
+	      </fileset>
+	      <restrict>
+	         <name name="**/*"/>
+	         <archives>
+	           <zips>
+	             <fileset dir="jar" includes="**/*.jar"/>
+	           </zips>
+	         </archives>
+	      </restrict>
+	      <manifest>
+	        <attribute name="Main-Class" value="bzh.plealog.blastviewer.BlastViewer"/>
+	        <attribute name="Built-By" value="Patrick G. Durand"/>
+	        <attribute name="Title" value="${prg.name}"/>
+	        <attribute name="Version" value="${prg.version}"/>
+	      </manifest>
+	    </jar>
+	    <jar destfile="${pbc.libJar}" update="true">
+	      <zipfileset dir="${basedir}" includes="*.txt"/>
+	    </jar>
+	</target>
+
+</project>

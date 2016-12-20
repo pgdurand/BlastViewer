@@ -1,0 +1,24 @@
+This product includes software developed by:
+
+  The Plealog Team (http://www.plealog.com)
+    Plealog license is here: http://www.apache.org/licenses/LICENSE-2.0
+    It targets: jgaf
+    Plealog license is here: https://www.gnu.org/licenses/agpl-3.0.txt
+    It targets: pb-core, pb-ui
+    
+  The Apache Software Foundation (http://www.apache.org/)
+    Apache license is here: http://www.apache.org/licenses/LICENSE-2.0
+    It targets: commons-xxx, xerces, xmlParser
+  
+  The Castor Framework Team (http://castor-data-binding.github.io/castor)
+    Castor license is here: http://castor-data-binding.github.io/castor/about/licenses.html
+    It targets: castor-xml
+    
+  The XStream Framework Team (http://x-stream.github.io/):
+    XStream License is here: http://x-stream.github.io/license.html
+    It targets: xstream
+    
+  The JGoodies Forms Framework Team (http://www.jgoodies.com/freeware/libraries/forms/).
+    JGoodies license is here: https://opensource.org/licenses/bsd-license.html
+    It targets: forms
+    

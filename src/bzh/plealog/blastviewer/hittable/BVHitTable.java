@@ -1,0 +1,54 @@
+/* Copyright (C) 2003-2016 Patrick G. Durand
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  You may obtain a copy of the License at
+ *
+ *     https://www.gnu.org/licenses/agpl-3.0.txt
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ */
+package bzh.plealog.blastviewer.hittable;
+
+import javax.swing.Action;
+
+import bzh.plealog.bioinfo.ui.blast.hittable.BlastHitTable;
+import bzh.plealog.blastviewer.actions.EditColorPolicyAction;
+import bzh.plealog.blastviewer.resources.BVMessages;
+
+/**
+ * Specific implementation of a BlastHitTable that adds some more controls.
+ * 
+ * @author Patrick G. Durand
+ */
+public class BVHitTable extends BlastHitTable {
+
+  private static final long serialVersionUID = -5195223880667175259L;
+
+  public BVHitTable() {
+    super();
+  }
+
+  public BVHitTable(String id) {
+    super(id);
+  }
+
+  @Override
+  protected Action[] getTableSpecialActionsForMenu() {
+    EditColorPolicyAction editAct;
+    Action[] acts;
+
+    acts = new Action[1];
+    editAct = new EditColorPolicyAction(BVMessages.getString("BVHitTable.tool.edt.clr"));
+    editAct.setParent(_blastList);
+    acts[0] = editAct;
+    return acts;
+  }
+
+}
