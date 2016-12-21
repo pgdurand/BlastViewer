@@ -18,11 +18,17 @@ package bzh.plealog.blastviewer.util;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.io.File;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+
+import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
+import bzh.plealog.bioinfo.api.data.searchresult.io.SRLoader;
+import bzh.plealog.bioinfo.io.searchresult.SerializerSystemFactory;
+import bzh.plealog.blastviewer.BlastViewerPanel;
 
 import com.plealog.genericapp.api.EZEnvironment;
 import com.plealog.genericapp.ui.desktop.GDesktopPane;
@@ -84,6 +90,33 @@ public class BlastViewerOpener {
     _helperField.setBackground(NOT_RUNNING_TASK_COLOR);
   }
 
+  /**
+   * Load a BLAST XML data file.
+   * 
+   * @param f a file. Must be a Blast legacy XML file
+   * 
+   * @return a SROutput object
+   */
+  public static SROutput readBlastFile(File f) {
+    // setup an NCBI Blast Loader (XML)
+    SRLoader ncbiBlastLoader = SerializerSystemFactory
+        .getLoaderInstance(SerializerSystemFactory.NCBI_LOADER);
+    return ncbiBlastLoader.load(f);
+  }
+
+  /**
+   * Prepare a new instance of a Blast Viewer panel.
+   * 
+   * @param data a Blast result
+   * 
+   * @return a BlastViewerPanel object
+   */
+  public static BlastViewerPanel prepareViewer(SROutput data){
+    BlastViewerPanel viewer = new BlastViewerPanel();
+    viewer.setContent(data);
+    return viewer;
+  }
+  
   /**
    * Add a new BlastViewer to this desktop.
    * 

@@ -28,7 +28,6 @@ import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.api.data.searchresult.io.SRLoader;
 import bzh.plealog.bioinfo.io.searchresult.SerializerSystemFactory;
 import bzh.plealog.bioinfo.ui.blast.config.ConfigManager;
-import bzh.plealog.blastviewer.BlastViewerPanel;
 import bzh.plealog.blastviewer.client.ncbi.QBlastRetriever;
 import bzh.plealog.blastviewer.config.directory.DirManager;
 import bzh.plealog.blastviewer.resources.BVMessages;
@@ -142,11 +141,8 @@ public class FetchFromNcbiAction extends AbstractAction {
                 .getLoaderInstance(SerializerSystemFactory.NCBI_LOADER);
             // load data from file
             SROutput so = ncbiBlastLoader.load(resFile);
-            // prepare the viewer
-            BlastViewerPanel viewer = new BlastViewerPanel();
-            viewer.setContent(so);
             // display the viewer
-            BlastViewerOpener.displayInternalFrame(viewer, resFile.getName(),
+            BlastViewerOpener.displayInternalFrame(BlastViewerOpener.prepareViewer(so), resFile.getName(),
                 null);
           } catch (IOException e) {
             EZLogger.warn(BVMessages.getString("FetchFromNcbiAction.err1")

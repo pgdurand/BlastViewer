@@ -23,10 +23,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 
-import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
-import bzh.plealog.bioinfo.api.data.searchresult.io.SRLoader;
-import bzh.plealog.bioinfo.io.searchresult.SerializerSystemFactory;
-import bzh.plealog.blastviewer.BlastViewerPanel;
 import bzh.plealog.blastviewer.resources.BVMessages;
 import bzh.plealog.blastviewer.util.BlastViewerOpener;
 
@@ -64,12 +60,6 @@ public class OpenFileAction extends AbstractAction {
     super(name, icon);
   }
 
-  private SROutput readBlastFile(File f) {
-    // setup an NCBI Blast Loader (XML)
-    SRLoader ncbiBlastLoader = SerializerSystemFactory
-        .getLoaderInstance(SerializerSystemFactory.NCBI_LOADER);
-    return ncbiBlastLoader.load(f);
-  }
 
   private void doAction() {
     File f = EZFileManager.chooseFileForOpenAction(BVMessages
@@ -79,10 +69,9 @@ public class OpenFileAction extends AbstractAction {
 
     EZEnvironment.setWaitCursor();
 
-    BlastViewerPanel viewer = new BlastViewerPanel();
-    viewer.setContent(readBlastFile(f));
-
-    BlastViewerOpener.displayInternalFrame(viewer, f.getName(), null);
+    BlastViewerOpener.displayInternalFrame(
+        BlastViewerOpener.prepareViewer(BlastViewerOpener.readBlastFile(f)),
+        f.getName(), null);
   }
 
   public void actionPerformed(ActionEvent event) {

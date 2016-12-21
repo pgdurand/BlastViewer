@@ -51,6 +51,7 @@ import bzh.plealog.blastviewer.config.color.ColorPolicyConfigImplem;
 import bzh.plealog.blastviewer.config.directory.DirManager;
 import bzh.plealog.blastviewer.hittable.BVHitTableFactoryImplem;
 import bzh.plealog.blastviewer.resources.BVMessages;
+import bzh.plealog.blastviewer.util.BlastTransferHandler;
 import bzh.plealog.blastviewer.util.BlastViewerOpener;
 
 import com.plealog.genericapp.api.EZApplicationBranding;
@@ -245,7 +246,7 @@ public class BlastViewer {
    */
   private static class MyStarterListener implements EZUIStarterListener {
 
-    private GDesktopPane _desktop   = new GDesktopPane();
+    private GDesktopPane _desktop;
     private Component    _mainCompo = null;
     private JPanel       _btnPanel;
 
@@ -254,11 +255,13 @@ public class BlastViewer {
       JButton logBtn;
       JWindowsMenu windowsMenu;
 
-      dpanel = new JPanel(new BorderLayout());
-      mnuPnl = new JPanel(new BorderLayout());
-
-      _btnPanel = new JPanel(new BorderLayout());
-
+      // prepare the Desktop panel
+      _desktop   = new GDesktopPane();
+      // this is for Drag-and-Drop
+      _desktop.setTransferHandler(new BlastTransferHandler());
+      
+      // prepare the Windows drop down menu; this is for MDI operations
+      // (MDI: multiple document interface)
       JMenuBar menuBar = new JMenuBar();
       ImageIcon icon = EZEnvironment.getImageIcon("documents.png");
       if (icon != null) {
@@ -273,15 +276,19 @@ public class BlastViewer {
           .getDesktopPane()));
       menuBar.add(windowsMenu);
 
+      // prepare the little "logger" button
       logBtn = new JButton(EZEnvironment.getImageIcon("logger.png"));
       logBtn.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
       logBtn.addActionListener(new ShowLoggerFrame());
       logBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
       logBtn.setHorizontalTextPosition(SwingConstants.CENTER);
       logBtn.setText("Log");
-
       windowsMenu.setFont(logBtn.getFont());
 
+      // prepare some panels to layout commands located on top of the Desktop
+      dpanel = new JPanel(new BorderLayout());
+      mnuPnl = new JPanel(new BorderLayout());
+      _btnPanel = new JPanel(new BorderLayout());
       mnuPnl.add(menuBar, BorderLayout.WEST);
       mnuPnl.add(logBtn, BorderLayout.EAST);
       _btnPanel.add(mnuPnl, BorderLayout.EAST);
