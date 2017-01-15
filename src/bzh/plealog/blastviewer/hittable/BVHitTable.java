@@ -17,13 +17,17 @@
 package bzh.plealog.blastviewer.hittable;
 
 import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JToolBar;
 
 import bzh.plealog.bioinfo.ui.blast.hittable.BlastHitTable;
-import bzh.plealog.blastviewer.actions.EditColorPolicyAction;
+import bzh.plealog.blastviewer.actions.api.BVActionManager;
+import bzh.plealog.blastviewer.actions.api.BVGenericAction;
+import bzh.plealog.blastviewer.actions.hittable.EditColorPolicyAction;
 import bzh.plealog.blastviewer.resources.BVMessages;
 
 /**
- * Specific implementation of a BlastHitTable that adds some more controls.
+ * Specific implementation of a BlastHitTable that adds some controls.
  * 
  * @author Patrick G. Durand
  */
@@ -45,10 +49,30 @@ public class BVHitTable extends BlastHitTable {
     Action[] acts;
 
     acts = new Action[1];
-    editAct = new EditColorPolicyAction(BVMessages.getString("BVHitTable.tool.edt.clr"));
+    editAct = new EditColorPolicyAction(
+        BVMessages.getString("BVHitTable.tool.edt.clr"));
     editAct.setParent(_blastList);
     acts[0] = editAct;
     return acts;
   }
 
+  protected JToolBar getToolbar() {
+    JButton btn;
+
+    JToolBar tBar;
+
+    tBar = new JToolBar();
+    tBar.setFloatable(false);
+    
+    for (BVGenericAction act : BVActionManager.getActions()){
+      btn = tBar.add(act);
+      act.setHitTable(this);
+      act.setEnabled(true);
+      if (act.getAction().getDescription()!=null){
+        btn.setToolTipText(act.getAction().getDescription());
+      }
+    }
+    
+    return tBar;
+  }
 }

@@ -14,7 +14,7 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Affero General Public License for more details.
  */
-package bzh.plealog.blastviewer.actions;
+package bzh.plealog.blastviewer.actions.hittable;
 
 import java.awt.event.ActionEvent;
 

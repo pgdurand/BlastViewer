@@ -42,11 +42,18 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.BasicConfigurator;
 
 import bzh.plealog.bioinfo.api.core.config.CoreSystemConfigurator;
+import bzh.plealog.bioinfo.api.filter.config.FilterSystemConfigurator;
 import bzh.plealog.bioinfo.ui.blast.config.ConfigManager;
 import bzh.plealog.bioinfo.ui.blast.config.color.ColorPolicyConfig;
 import bzh.plealog.bioinfo.ui.config.UISystemConfigurator;
-import bzh.plealog.blastviewer.actions.FetchFromNcbiAction;
-import bzh.plealog.blastviewer.actions.OpenFileAction;
+import bzh.plealog.bioinfo.ui.modules.filter.FilterManagerUI;
+import bzh.plealog.bioinfo.ui.modules.filter.FilterSystemUI;
+import bzh.plealog.blastviewer.actions.api.BVAction;
+import bzh.plealog.blastviewer.actions.api.BVActionManager;
+import bzh.plealog.blastviewer.actions.hittable.FilterEntryAction;
+import bzh.plealog.blastviewer.actions.hittable.SaveEntryAction;
+import bzh.plealog.blastviewer.actions.main.FetchFromNcbiAction;
+import bzh.plealog.blastviewer.actions.main.OpenFileAction;
 import bzh.plealog.blastviewer.config.color.ColorPolicyConfigImplem;
 import bzh.plealog.blastviewer.config.directory.DirManager;
 import bzh.plealog.blastviewer.hittable.BVHitTableFactoryImplem;
@@ -140,9 +147,16 @@ public class BlastViewer {
     ConfigManager.setHitTableFactory(new BVHitTableFactoryImplem());
     // we setup the Directory Manager
     ConfigManager.addConfig(new DirManager());
+    
     // we setup the color policy
     initColorPolicyConfig();
 
+    // we setup the FilterEngine System
+    initFilteringSystem();
+    
+    // we install actions for the HitTable component
+    initActions();
+    
     // Add a listener to application startup cycle (see below)
     EZEnvironment.setUIStarterListener(new MyStarterListener());
 
@@ -196,6 +210,22 @@ public class BlastViewer {
     return props;
   }
 
+  private static void initFilteringSystem(){
+    FilterSystemConfigurator.initializeSystem();
+    //prepare Filter Manager environment
+    FilterSystemUI.initializeSystem();
+
+    DirManager mgr = (DirManager) ConfigManager.getConfig(DirManager.NAME);
+    String filterStoragePath;
+    try {
+      filterStoragePath = mgr.getApplicationDataPath();
+      filterStoragePath = FilterManagerUI.prepareEnvironment(filterStoragePath);
+    } catch (IOException e) {
+      EZLogger.warn(e.toString());
+      return;
+    }
+    FilterSystemUI.setFilterCentralRepositoryPath(EZFileUtils.terminatePath(filterStoragePath));
+  }
   /**
    * Initializes colors system.
    */
@@ -241,6 +271,24 @@ public class BlastViewer {
     }
   }
 
+  private static void initActions(){
+    BVAction  act;
+    
+    // Filter action
+    act = new FilterEntryAction(
+          BVMessages.getString("BlastHitList.filter.btn"),
+          BVMessages.getString("BlastHitList.filter.tip"),
+          EZEnvironment.getImageIcon("filterRes.png"));
+    BVActionManager.addAction(act);
+
+    // Save action
+    act = new SaveEntryAction(
+        BVMessages.getString("BlastHitList.save.btn"),
+        BVMessages.getString("BlastHitList.save.tip"),
+        EZEnvironment.getImageIcon("saveRes.png"));
+    BVActionManager.addAction(act);
+  }
+  
   /**
    * Implementation of the jGAF API.
    */
