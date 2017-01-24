@@ -67,6 +67,7 @@
       <include name="**/*cfg"/>
       <include name="**/*gif"/>
       <include name="**/*png"/>
+      <include name="**/*xml"/>
     </fileset>
   </copy>
 </target>

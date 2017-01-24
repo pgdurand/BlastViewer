@@ -54,6 +54,8 @@ import bzh.plealog.blastviewer.actions.hittable.FilterEntryAction;
 import bzh.plealog.blastviewer.actions.hittable.SaveEntryAction;
 import bzh.plealog.blastviewer.actions.main.FetchFromNcbiAction;
 import bzh.plealog.blastviewer.actions.main.OpenFileAction;
+import bzh.plealog.blastviewer.actions.main.OpenSampleFileAction;
+import bzh.plealog.blastviewer.config.FileExtension;
 import bzh.plealog.blastviewer.config.color.ColorPolicyConfigImplem;
 import bzh.plealog.blastviewer.config.directory.DirManager;
 import bzh.plealog.blastviewer.hittable.BVHitTableFactoryImplem;
@@ -147,6 +149,9 @@ public class BlastViewer {
     ConfigManager.setHitTableFactory(new BVHitTableFactoryImplem());
     // we setup the Directory Manager
     ConfigManager.addConfig(new DirManager());
+    
+    //setup file extensions
+    FileExtension.initialize();
     
     // we setup the color policy
     initColorPolicyConfig();
@@ -411,6 +416,18 @@ public class BlastViewer {
     tBar = new JToolBar();
     tBar.setFloatable(false);
 
+    icon = EZEnvironment.getImageIcon("openTest.png");
+    if (icon != null) {
+      act = new OpenSampleFileAction("", icon);
+    } else {
+      act = new OpenSampleFileAction(BVMessages.getString("OpenBlastList.test.name"));
+    }
+    act.setEnabled(true);
+    btn = tBar.add(act);
+    btn.setToolTipText(BVMessages.getString("OpenBlastList.test.tip"));
+    btn.setText(BVMessages.getString("OpenBlastList.test.name"));
+
+    tBar.addSeparator();
     icon = EZEnvironment.getImageIcon("open.png");
     if (icon != null) {
       act = new OpenFileAction("", icon);

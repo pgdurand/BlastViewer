@@ -47,6 +47,7 @@ import bzh.plealog.bioinfo.ui.carto.data.FeatureOrganizerManager;
 import bzh.plealog.bioinfo.ui.carto.painter.FeaturePainter;
 import bzh.plealog.bioinfo.ui.resources.SVMessages;
 import bzh.plealog.bioinfo.ui.util.JHeadPanel;
+import bzh.plealog.blastviewer.msa.PhyloMSAPanel;
 
 import com.plealog.genericapp.api.EZEnvironment;
 
@@ -69,7 +70,8 @@ public class BlastViewerPanel extends JPanel {
   protected JPanel _rightPane;
   protected BlastHitListSupport _updateSupport;
   protected GraphicViewer _cartoViewer;
-
+  protected PhyloMSAPanel _msaPane;
+  
   protected static final String HITPANEL_HEADER = SVMessages.getString("BlastViewerPanel.0");
   protected static final String HITPANEL_LIST = SVMessages.getString("BlastViewerPanel.1");
   protected static final String HITPANEL_GRAPHIC = SVMessages.getString("BlastViewerPanel.2");
@@ -157,6 +159,8 @@ public class BlastViewerPanel extends JPanel {
     _summaryPane = new BlastNavigator();
     _hitListPane = ConfigManager.getHitTableFactory().createViewer();
     _seqAlignViewer = ConfigManager.getSeqAlignViewerFactory().createViewer();
+    _msaPane = new PhyloMSAPanel();
+    
     icon = EZEnvironment.getImageIcon("hitTable.png");
     if (icon != null) {
       headPanel = new JHeadPanel(icon, HITPANEL_HEADER, _hitListPane);
@@ -178,22 +182,26 @@ public class BlastViewerPanel extends JPanel {
     } else {
       jtp = new JTabbedPane(JTabbedPane.TOP);
     }
-    jtp.add("Hit Table", _rightPane);
-    jtp.add("Graphic Summary", _cartoViewer);
-
+    jtp.add("Hits", _rightPane);
+    jtp.add("Graphic", _cartoViewer);
+    jtp.add("MSA", _msaPane);
+    
     this.setLayout(new BorderLayout());
     this.add(jtp, BorderLayout.CENTER);
 
     // listeners to the selection of a new BIteration
     _summaryPane.addIterationListener(_hitListPane);
     _summaryPane.addIterationListener(_cartoViewer);
+    _summaryPane.addIterationListener(_msaPane);
     // listeners to the change of data model
     _hitListPane.addHitDataListener(_seqAlignViewer);
     // listeners to selection within hit tables
     _hitListPane.registerHitListSupport(_updateSupport);
     _seqAlignViewer.registerHitListSupport(_updateSupport);
+    _msaPane.registerHitListSupport(_updateSupport);
     _updateSupport.addBlastHitListListener(_hitListPane);
     _updateSupport.addBlastHitListListener(_seqAlignViewer);
+    _updateSupport.addBlastHitListListener(_msaPane);
     this.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
   }
 
