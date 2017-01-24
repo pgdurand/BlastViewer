@@ -19,7 +19,6 @@ package bzh.plealog.blastviewer.actions.api;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 
 import bzh.plealog.bioinfo.ui.blast.hittable.BlastHitTable;
