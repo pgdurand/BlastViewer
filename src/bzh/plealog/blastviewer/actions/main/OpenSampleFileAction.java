@@ -19,7 +19,6 @@ package bzh.plealog.blastviewer.actions.main;
 import java.awt.event.ActionEvent;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;

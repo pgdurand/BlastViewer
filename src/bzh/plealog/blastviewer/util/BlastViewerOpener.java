@@ -93,15 +93,29 @@ public class BlastViewerOpener {
   /**
    * Load a BLAST XML data file.
    * 
-   * @param f a file. Must be a Blast legacy XML file
+   * @param f a file. Must be a Blast legacy XML file or a ZML one.
    * 
    * @return a SROutput object
    */
   public static SROutput readBlastFile(File f) {
-    // setup an NCBI Blast Loader (XML)
+    
+    SROutput sro = null;
+    
     SRLoader ncbiBlastLoader = SerializerSystemFactory
-        .getLoaderInstance(SerializerSystemFactory.NCBI_LOADER);
-    return ncbiBlastLoader.load(f);
+      .getLoaderInstance(SerializerSystemFactory.NCBI_LOADER);
+    if (ncbiBlastLoader.canRead(f)){
+      sro = ncbiBlastLoader.load(f);
+      return sro;
+    }
+    
+    SRLoader nativeBlastLoader = SerializerSystemFactory
+        .getLoaderInstance(SerializerSystemFactory.NATIVE_LOADER);
+    if (nativeBlastLoader.canRead(f)){
+      sro = nativeBlastLoader.load(f);
+      return sro;
+    }
+    
+    return null;
   }
 
   /**

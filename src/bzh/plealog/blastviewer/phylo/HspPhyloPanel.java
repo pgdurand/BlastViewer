@@ -37,7 +37,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 
 import bzh.plealog.bioinfo.api.data.sequence.BankSequenceInfo;
-import bzh.plealog.bioinfo.ui.blast.config.ConfigManager;
 import bzh.plealog.bioinfo.ui.blast.core.BlastHitHSP;
 import bzh.plealog.bioinfo.ui.blast.core.BlastHitHspImplem;
 import bzh.plealog.bioinfo.ui.blast.event.BlastHitListEvent;
@@ -272,7 +271,7 @@ public class HspPhyloPanel extends PhyloPanel {
   protected BlastHitTable getBlastHitList() {
     BlastHitTable bl;
 
-    bl = ConfigManager.getHitTableFactory().createViewer();
+    bl = new BlastHitTable("msap");//ConfigManager.getHitTableFactory().createViewer();
 
     return bl;
   }

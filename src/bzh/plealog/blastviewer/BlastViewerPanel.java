@@ -46,10 +46,10 @@ import bzh.plealog.bioinfo.ui.carto.data.FGraphics;
 import bzh.plealog.bioinfo.ui.carto.data.FeatureOrganizerManager;
 import bzh.plealog.bioinfo.ui.carto.painter.FeaturePainter;
 import bzh.plealog.bioinfo.ui.resources.SVMessages;
-import bzh.plealog.bioinfo.ui.util.JHeadPanel;
 import bzh.plealog.blastviewer.msa.PhyloMSAPanel;
 
 import com.plealog.genericapp.api.EZEnvironment;
+import com.plealog.genericapp.ui.common.JHeadPanel;
 
 /**
  * This is the BlastViewer Main Module.
