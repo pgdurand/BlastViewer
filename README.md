@@ -1,32 +1,32 @@
-#BlastViewer
+# BlastViewer
 
-[![License](https://img.shields.io/badge/license-Affero%20GPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.txt)
+[![License](https://img.shields.io/badge/license-Affero%20GPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.txt)  [![](https://tokei.rs/b1/github/pgdurand/BlastViewer?category=code)](https://github.com/pgdurand/BlastViewer) [![](https://img.shields.io/badge/platform-Java--1.7+-yellow.svg)](http://www.oracle.com/technetwork/java/javase/downloads/index.html) [![](https://img.shields.io/badge/run_on-Linux--Mac_OSX--Windows-yellowgreen.svg)]()
 
-##Introduction
+## Introduction
 
 This is the BlastViewer Tool. It aims at displaying in a graphical way results from the NCBI BLAST software.
 
 ![BlastViewer](doc/BlastViewer.png)
 
-##Requirements
+## Requirements
 
 Use a [Java Virtual Machine](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 1.7 (or above) from Oracle. 
 
 *Not tested with any other JVM providers but Oracle... so there is no guarantee that the software will work as expected if not using Oracle's JVM.*
 
-##User manual
+## User manual
 
 
 See the [Wiki](https://github.com/pgdurand/BlastViewer/wiki) page of this project.
 
 
-##License and dependencies
+## License and dependencies
 
 BlastViewer itself is released under the GNU Affero General Public License, Version 3.0. [AGPL](https://www.gnu.org/licenses/agpl-3.0.txt)
 
 It depends on several thrid-party libraries as stated in the NOTICE.txt file provided with this project.
 
-##Once upon a time was: VisualBlast / KoriBlast
+## Once upon a time was: VisualBlast / KoriBlast
 
 During Summer 2004 I was asking myself how easy it could be to rewrite in Java the original [VisualBlast software](http://www.ncbi.nlm.nih.gov/pubmed/9283755) written in C for the MS-Windows platform.
 
@@ -37,4 +37,4 @@ So, during my holidays on Summer 2004, I started a wonderful story: the creation
 Korilog ceased its activities on June 2015, therefore I decided to release these UI components to the open source community... just in time for Christmas 2016! ;-) 
 
 --
-(c) 2003-2016 - Patrick G. Durand
+(c) 2003-2017 - Patrick G. Durand
