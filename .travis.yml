@@ -4,3 +4,4 @@ jdk:
   - oraclejdk7
 script:
   ant makejar
+
