@@ -35,14 +35,18 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import com.plealog.genericapp.api.log.EZLogger;
 
 /**
- * This is a CAS authentication client. 
+ * This is a CAS authentication client relying on the direct use of CAS REST API.
+ * 
+ * @see https://wiki.jasig.org/display/casum/restful+api
  * 
  * @author Patrick G. Durand
  */
 public class CasClient {
 
-  // Adapted from https://wiki.jasig.org/display/casum/restful+api (Groovy example)
-  // Todo: http://debuguide.blogspot.fr/2013/01/quick-guide-for-migration-of-commons.html
+  // Adapted from Groovy example on https://wiki.jasig.org/display/casum/restful+api
+  // TODO: this code relies on Apache's HttpClient 3... should upgrade to more recent
+  //       library, see for instance: 
+  //         http://debuguide.blogspot.fr/2013/01/quick-guide-for-migration-of-commons.html
   
   private static final String SERVICE_TOKEN = "service";
   private static final String TICKET_TOKEN  = "ticket";
@@ -61,13 +65,16 @@ public class CasClient {
   /**
    * Get a ticket granting ticket from CAS server. Step 1.
    * 
-   * @param server CAS server URL
+   * @param server CAS REST API server URL
    * @param username user name
    * @param password password 
    * 
-   * @return a valid ticket granting ticket or null if something wrong occurs.
+   * @return a valid ticket granting ticket or null if something wrong occurs, such IO exceptions. By designed
+   * an exception is only thrown for very particular type of errors, see throws clause below.
+   * 
+   * @throws CasClientException if bad credentials error is answered by CAS server.
    * */
-  public String getTicketGrantingTicket(String server, String username, String password) {
+  public String getTicketGrantingTicket(String server, String username, String password) throws CasClientException{
     HttpClient    client = new HttpClient();
     PostMethod    post   = new PostMethod(server);
     NameValuePair nvp[]  = new NameValuePair[2];
@@ -85,6 +92,24 @@ public class CasClient {
         EZLogger.warn(MF0);
         EZLogger.debug(MF2.format(new Object[] { response.substring(0, Math.min(1024, response.length()))} ));
         break;
+      case HttpStatus.SC_BAD_REQUEST:
+        /* During tests of CAS client with wrong credentials values, it appears that CAS REST API server 
+           answers the following HTML snippet along with error HTTP/400-Bad Request: 
+            <html>
+            <head>
+               <title>Status page</title>
+            </head>
+            <body>
+            <h3>error.authentication.credentials.bad</h3><p>You can get technical details <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">here</a>.<br>
+            Please continue your visit at our <a href="/">home page</a>.
+            </p>
+            </body>
+            </html>
+         */
+        if (response.contains("error.authentication.credentials.bad")) {
+          throw new CasClientException("Bad crendentials", CasClientException.TYPE.BAD_CREDENTIALS);
+        }
+        //not a 400 error? handle with default clause...
       default:
         EZLogger.warn(MF1.format(new Object[] { post.getStatusCode() }));
         EZLogger.debug(MF3.format(new Object[] { response}));
@@ -98,10 +123,12 @@ public class CasClient {
     return null;
   }
 
+  
+  
   /**
    * Get a service ticket from CAS server. Step 2.
    * 
-   * @param server CAS server URL
+   * @param server CAS REST API server URL
    * @param ticketGrantingTicket ticket granting ticket
    * @param service service URL 
    * 
@@ -231,7 +258,7 @@ public class CasClient {
   /**
    * Close connection from CAS server. Step 4.
    * 
-   * @param server CAS server URL
+   * @param server CAS REST API server URL
    * @param ticketGrantingTicket ticket granting ticket
    * */
   public void logout(String server, String ticketGrantingTicket) {
