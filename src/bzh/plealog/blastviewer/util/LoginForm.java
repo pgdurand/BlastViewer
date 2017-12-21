@@ -17,7 +17,10 @@ package bzh.plealog.blastviewer.util;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -36,10 +39,12 @@ public class LoginForm {
   private JPanel         _loginForm;
   private JTextField     _userNameField;
   private JPasswordField _passwordField;
-
+  private JCheckBox      _hidePasswordCheckbox;
+  
   private static final String FORM_LBL  = "Set crendentials";
   private static final String UNAME_LBL = "User name:";
   private static final String PSWD_LBL  = "Password:";
+  private static final String PSWD2_LBL = "show password";
   
   /**
    * Constructor.
@@ -97,7 +102,19 @@ public class LoginForm {
     _loginForm = new JPanel(new BorderLayout(5, 5));
     _userNameField = new JTextField();
     _passwordField = new JPasswordField();
+    _hidePasswordCheckbox = new JCheckBox(PSWD2_LBL);
     
+    _hidePasswordCheckbox.addItemListener(new ItemListener() {
+      private char curEchoChar = _passwordField.getEchoChar();
+      public void itemStateChanged(ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+          _passwordField.setEchoChar((char) 0);
+        } else {
+          _passwordField.setEchoChar(curEchoChar);
+        }
+      }
+    });
+
     layout = new FormLayout("40dlu, 1dlu, 100dlu", "");
     builder = new DefaultFormBuilder(layout);
     builder.setDefaultDialogBorder();
@@ -105,6 +122,8 @@ public class LoginForm {
     builder.append(UNAME_LBL, _userNameField);
     builder.nextLine();
     builder.append(PSWD_LBL, _passwordField);
+    builder.nextLine();
+    builder.append("", _hidePasswordCheckbox);
     _loginForm.add(builder.getContainer(), BorderLayout.CENTER);
     
   }

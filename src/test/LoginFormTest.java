@@ -20,6 +20,8 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import com.plealog.genericapp.protection.distrib.HStringUtils;
+
 import bzh.plealog.blastviewer.util.LoginForm;
 
 /**
@@ -44,8 +46,11 @@ public class LoginFormTest {
 
         LoginForm lif = new LoginForm();
         lif.setUserName(System.getProperty("user.name"));
+        
         if (lif.displayLoginForm(appFrame)) {
-          credentialsLbl.setText(String.format("Welcome %s (%s)", lif.getUserName(), new String(lif.getPasword())));
+          String encrypted = HStringUtils.encryptHexString(new String(lif.getPasword()));
+          System.out.println(encrypted);
+          credentialsLbl.setText(String.format("Welcome %s (%s)", lif.getUserName(), encrypted));
         } else {
           credentialsLbl.setText("No credentials set!");
         }
