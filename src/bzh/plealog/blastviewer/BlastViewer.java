@@ -41,28 +41,6 @@ import javax.swing.SwingConstants;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.BasicConfigurator;
 
-import bzh.plealog.bioinfo.api.core.config.CoreSystemConfigurator;
-import bzh.plealog.bioinfo.api.filter.config.FilterSystemConfigurator;
-import bzh.plealog.bioinfo.ui.blast.config.ConfigManager;
-import bzh.plealog.bioinfo.ui.blast.config.color.ColorPolicyConfig;
-import bzh.plealog.bioinfo.ui.config.UISystemConfigurator;
-import bzh.plealog.bioinfo.ui.modules.filter.FilterManagerUI;
-import bzh.plealog.bioinfo.ui.modules.filter.FilterSystemUI;
-import bzh.plealog.blastviewer.actions.api.BVAction;
-import bzh.plealog.blastviewer.actions.api.BVActionManager;
-import bzh.plealog.blastviewer.actions.hittable.FilterEntryAction;
-import bzh.plealog.blastviewer.actions.hittable.SaveEntryAction;
-import bzh.plealog.blastviewer.actions.main.FetchFromNcbiAction;
-import bzh.plealog.blastviewer.actions.main.OpenFileAction;
-import bzh.plealog.blastviewer.actions.main.OpenSampleFileAction;
-import bzh.plealog.blastviewer.config.FileExtension;
-import bzh.plealog.blastviewer.config.color.ColorPolicyConfigImplem;
-import bzh.plealog.blastviewer.config.directory.DirManager;
-import bzh.plealog.blastviewer.hittable.BVHitTableFactoryImplem;
-import bzh.plealog.blastviewer.resources.BVMessages;
-import bzh.plealog.blastviewer.util.BlastTransferHandler;
-import bzh.plealog.blastviewer.util.BlastViewerOpener;
-
 import com.plealog.genericapp.api.EZApplicationBranding;
 import com.plealog.genericapp.api.EZEnvironment;
 import com.plealog.genericapp.api.EZGenericApplication;
@@ -75,6 +53,30 @@ import com.plealog.genericapp.api.log.EZSingleLineFormatter;
 import com.plealog.genericapp.ui.desktop.CascadingWindowPositioner;
 import com.plealog.genericapp.ui.desktop.GDesktopPane;
 import com.plealog.genericapp.ui.desktop.JWindowsMenu;
+
+import bzh.plealog.bioinfo.api.core.config.CoreSystemConfigurator;
+import bzh.plealog.bioinfo.api.filter.config.FilterSystemConfigurator;
+import bzh.plealog.bioinfo.ui.blast.config.ConfigManager;
+import bzh.plealog.bioinfo.ui.blast.config.color.ColorPolicyConfig;
+import bzh.plealog.bioinfo.ui.config.UISystemConfigurator;
+import bzh.plealog.bioinfo.ui.modules.filter.FilterManagerUI;
+import bzh.plealog.bioinfo.ui.modules.filter.FilterSystemUI;
+import bzh.plealog.blastviewer.actions.api.BVAction;
+import bzh.plealog.blastviewer.actions.api.BVActionManager;
+import bzh.plealog.blastviewer.actions.hittable.FilterEntryAction;
+import bzh.plealog.blastviewer.actions.hittable.SaveEntryAction;
+import bzh.plealog.blastviewer.actions.main.FetchFromNcbiAction;
+import bzh.plealog.blastviewer.actions.main.GetLoginFormAction;
+import bzh.plealog.blastviewer.actions.main.OpenFileAction;
+import bzh.plealog.blastviewer.actions.main.OpenSampleFileAction;
+import bzh.plealog.blastviewer.config.FileExtension;
+import bzh.plealog.blastviewer.config.color.ColorPolicyConfigImplem;
+import bzh.plealog.blastviewer.config.directory.DirManager;
+import bzh.plealog.blastviewer.config.jws.JNLPStarter;
+import bzh.plealog.blastviewer.hittable.BVHitTableFactoryImplem;
+import bzh.plealog.blastviewer.resources.BVMessages;
+import bzh.plealog.blastviewer.util.BlastTransferHandler;
+import bzh.plealog.blastviewer.util.BlastViewerOpener;
 
 /**
  * Starter class for the Blast Viewer software.
@@ -403,8 +405,12 @@ public class BlastViewer {
     public void preStart() {
       // This method is called by the framework at the very beginning of
       // application startup.
+      JNLPStarter.startJWSService();
     }
 
+    @Override
+    public void frameDisplayed() {
+    }
   }
 
   private static JToolBar getToolbar() {
@@ -450,6 +456,19 @@ public class BlastViewer {
     btn = tBar.add(act);
     btn.setToolTipText(BVMessages.getString("OpenBlastList.openrid.tip"));
     btn.setText(BVMessages.getString("OpenBlastList.openrid.name"));
+    
+    
+    tBar.addSeparator();
+    icon = EZEnvironment.getImageIcon("open.png");
+    if (icon != null) {
+      act = new GetLoginFormAction("", icon);
+    } else {
+      act = new GetLoginFormAction(BVMessages.getString("OpenBlastList.open.name"));
+    }
+    act.setEnabled(true);
+    btn = tBar.add(act);
+    btn.setToolTipText(BVMessages.getString("OpenBlastList.open.tip"));
+    btn.setText(BVMessages.getString("OpenBlastList.open.name"));
     return tBar;
   }
 
