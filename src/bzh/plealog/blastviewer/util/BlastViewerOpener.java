@@ -25,14 +25,15 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
-import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
-import bzh.plealog.bioinfo.api.data.searchresult.io.SRLoader;
-import bzh.plealog.bioinfo.io.searchresult.SerializerSystemFactory;
-import bzh.plealog.blastviewer.BlastViewerPanel;
-
 import com.plealog.genericapp.api.EZEnvironment;
 import com.plealog.genericapp.ui.desktop.GDesktopPane;
 import com.plealog.genericapp.ui.desktop.GInternalFrame;
+
+import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
+import bzh.plealog.bioinfo.api.data.searchresult.io.SRLoader;
+import bzh.plealog.bioinfo.io.searchresult.SerializerSystemFactory;
+import bzh.plealog.blastviewer.BlastSummaryViewerPanel;
+import bzh.plealog.blastviewer.BlastViewerPanel;
 
 /**
  * Utility class to enable interaction with the GDesktopPane.
@@ -123,12 +124,19 @@ public class BlastViewerOpener {
    * 
    * @param data a Blast result
    * 
-   * @return a BlastViewerPanel object
+   * @return a JComponent object
    */
-  public static BlastViewerPanel prepareViewer(SROutput data){
-    BlastViewerPanel viewer = new BlastViewerPanel();
-    viewer.setContent(data);
-    return viewer;
+  public static JComponent prepareViewer(SROutput data){
+    if (data.getBlastType()==SROutput.PSIBLAST || data.countIteration()==1) {
+      BlastViewerPanel viewer = new BlastViewerPanel();
+      viewer.setContent(data);
+      return viewer;
+    }
+    else {
+      BlastSummaryViewerPanel viewer = new BlastSummaryViewerPanel();
+      viewer.setContent(data);
+      return viewer;
+    }
   }
   
   /**
