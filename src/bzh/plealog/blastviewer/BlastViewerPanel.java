@@ -19,6 +19,7 @@ package bzh.plealog.blastviewer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.Collections;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -28,17 +29,23 @@ import javax.swing.JTabbedPane;
 import bzh.plealog.bioinfo.api.core.config.CoreSystemConfigurator;
 import bzh.plealog.bioinfo.api.data.feature.Feature;
 import bzh.plealog.bioinfo.api.data.feature.Qualifier;
+import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
 import bzh.plealog.bioinfo.api.data.searchresult.SRHsp;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.api.data.searchresult.SRRequestInfo;
+import bzh.plealog.bioinfo.data.searchjob.InMemoryQuery;
+import bzh.plealog.bioinfo.data.searchresult.SRUtils;
 import bzh.plealog.bioinfo.ui.blast.config.ConfigManager;
 import bzh.plealog.bioinfo.ui.blast.config.color.ColorPolicyConfig;
 import bzh.plealog.bioinfo.ui.blast.config.color.DefaultHitColorPolicy;
 import bzh.plealog.bioinfo.ui.blast.core.BlastEntry;
 import bzh.plealog.bioinfo.ui.blast.core.BlastHitHSP;
+import bzh.plealog.bioinfo.ui.blast.core.QueryBaseUI;
 import bzh.plealog.bioinfo.ui.blast.event.BlastHitListSupport;
 import bzh.plealog.bioinfo.ui.blast.hittable.BlastHitTable;
 import bzh.plealog.bioinfo.ui.blast.nav.BlastNavigator;
+import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTable;
+import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.bioinfo.ui.blast.saviewer.SeqAlignViewer;
 import bzh.plealog.bioinfo.ui.blast.summary.GraphicViewer;
 import bzh.plealog.bioinfo.ui.carto.data.BasicFeatureOrganizer;
@@ -64,6 +71,7 @@ public class BlastViewerPanel extends JPanel {
 
   private static final long serialVersionUID = -2405089127382200483L;
 
+  protected SummaryTable _summaryTable;
   protected BlastHitTable _hitListPane;
   protected SeqAlignViewer _seqAlignViewer;
   protected BlastNavigator _summaryPane;
@@ -90,20 +98,44 @@ public class BlastViewerPanel extends JPanel {
    */
   public void setContent(BlastEntry entry) {
     _summaryPane.setContent(entry);
+    
+  //Prepare a View from the Model
+    InMemoryQuery query;
+    query = new InMemoryQuery();
+    List<SROutput> results = SRUtils.splitMultiResult(entry.getResult());
+    for(SROutput sro : results) {
+      query.addResult(sro);
+    }
+    // following is done manually, but real data can be retrieved 
+    // from bo object (not shown here)
+    query.setDatabankName("SwissProt");
+    query.setEngineSysName("blastp");
+    query.setJobName(entry.getName());
+    // a Blast result loaded from a file is always OK
+    query.setStatus(QueryBase.OK);
+    // query not provided in blastFile
+    query.setQueyPath("n/a");
+    // not appropriate here
+    query.setRID("n/a");
+    QueryBaseUI qBaseUI;
+    qBaseUI = new QueryBaseUI(query);
+    SummaryTableModel resultTableModel = new SummaryTableModel();
+    resultTableModel.setQuery(qBaseUI);
+    _summaryTable.setModel(resultTableModel);
   }
 
   /**
    * Set the data to display in this viewer.
    */
   public void setContent(SROutput so, String soPath) {
-    _summaryPane.setContent(prepareEntry(so, soPath));
+    setContent(prepareEntry(so, soPath));
   }
 
   /**
    * Set the data to display in this viewer.
    */
   public void setContent(SROutput so) {
-    _summaryPane.setContent(prepareEntry(so, null));
+    setContent(prepareEntry(so, null));
   }
 
   /**
@@ -155,6 +187,7 @@ public class BlastViewerPanel extends JPanel {
     JHeadPanel headPanel;
     ImageIcon icon;
 
+    _summaryTable = new SummaryTable(new SummaryTableModel());
     _updateSupport = new BlastHitListSupport();
     _summaryPane = new BlastNavigator();
     _hitListPane = ConfigManager.getHitTableFactory().createViewer();
@@ -182,6 +215,7 @@ public class BlastViewerPanel extends JPanel {
     } else {
       jtp = new JTabbedPane(JTabbedPane.TOP);
     }
+    jtp.add("Summary", _summaryTable);
     jtp.add("Hits", _rightPane);
     jtp.add("Graphic", _cartoViewer);
     jtp.add("MSA", _msaPane);
