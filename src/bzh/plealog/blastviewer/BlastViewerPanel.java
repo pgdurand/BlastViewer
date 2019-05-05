@@ -23,8 +23,12 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 
 import bzh.plealog.bioinfo.api.core.config.CoreSystemConfigurator;
 import bzh.plealog.bioinfo.api.data.feature.Feature;
@@ -53,6 +57,7 @@ import bzh.plealog.bioinfo.ui.carto.data.FGraphics;
 import bzh.plealog.bioinfo.ui.carto.data.FeatureOrganizerManager;
 import bzh.plealog.bioinfo.ui.carto.painter.FeaturePainter;
 import bzh.plealog.bioinfo.ui.resources.SVMessages;
+import bzh.plealog.bioinfo.ui.util.TableColumnManager;
 import bzh.plealog.blastviewer.msa.PhyloMSAPanel;
 
 import com.plealog.genericapp.api.EZEnvironment;
@@ -125,6 +130,42 @@ public class BlastViewerPanel extends JPanel {
   }
 
   /**
+   * Prepare a SummaryTable component.
+   * 
+   * @param blastQuery the query to display
+   */
+  private JComponent prepareSummaryTable() {
+    JPanel pnl;
+    SummaryTableModel resultTableModel;
+    SummaryTable resultTable;
+    JScrollPane scrollPaneRT;
+    TableColumnManager tcm;
+    
+    pnl = new JPanel(new BorderLayout());
+
+    // Result Table
+    resultTableModel = new SummaryTableModel();
+    resultTable = new SummaryTable(resultTableModel);
+    resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+    resultTable.getTableHeader().setReorderingAllowed(false);
+    resultTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    resultTable.setColumnSelectionAllowed(false);
+    resultTable.setRowSelectionAllowed(true);
+    resultTable.setGridColor(Color.LIGHT_GRAY);
+
+    // Top Scroll Pane
+    scrollPaneRT = new JScrollPane(resultTable);
+    scrollPaneRT.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+    scrollPaneRT.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+    tcm = new TableColumnManager(resultTable, resultTableModel.getReferenceColumnHeaders());
+    scrollPaneRT.setCorner(JScrollPane.UPPER_RIGHT_CORNER, tcm.getInvoker());
+
+    pnl.add(scrollPaneRT, BorderLayout.CENTER);
+    _summaryTable = resultTable;
+    return pnl;
+  }
+
+  /**
    * Set the data to display in this viewer.
    */
   public void setContent(SROutput so, String soPath) {
@@ -187,7 +228,6 @@ public class BlastViewerPanel extends JPanel {
     JHeadPanel headPanel;
     ImageIcon icon;
 
-    _summaryTable = new SummaryTable(new SummaryTableModel());
     _updateSupport = new BlastHitListSupport();
     _summaryPane = new BlastNavigator();
     _hitListPane = ConfigManager.getHitTableFactory().createViewer();
@@ -215,7 +255,7 @@ public class BlastViewerPanel extends JPanel {
     } else {
       jtp = new JTabbedPane(JTabbedPane.TOP);
     }
-    jtp.add("Summary", _summaryTable);
+    jtp.add("Summary", prepareSummaryTable());
     jtp.add("Hits", _rightPane);
     jtp.add("Graphic", _cartoViewer);
     jtp.add("MSA", _msaPane);
