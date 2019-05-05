@@ -19,37 +19,26 @@ package bzh.plealog.blastviewer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.Collections;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 
 import bzh.plealog.bioinfo.api.core.config.CoreSystemConfigurator;
 import bzh.plealog.bioinfo.api.data.feature.Feature;
 import bzh.plealog.bioinfo.api.data.feature.Qualifier;
-import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
 import bzh.plealog.bioinfo.api.data.searchresult.SRHsp;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.api.data.searchresult.SRRequestInfo;
-import bzh.plealog.bioinfo.data.searchjob.InMemoryQuery;
-import bzh.plealog.bioinfo.data.searchresult.SRUtils;
 import bzh.plealog.bioinfo.ui.blast.config.ConfigManager;
 import bzh.plealog.bioinfo.ui.blast.config.color.ColorPolicyConfig;
 import bzh.plealog.bioinfo.ui.blast.config.color.DefaultHitColorPolicy;
 import bzh.plealog.bioinfo.ui.blast.core.BlastEntry;
 import bzh.plealog.bioinfo.ui.blast.core.BlastHitHSP;
-import bzh.plealog.bioinfo.ui.blast.core.QueryBaseUI;
 import bzh.plealog.bioinfo.ui.blast.event.BlastHitListSupport;
 import bzh.plealog.bioinfo.ui.blast.hittable.BlastHitTable;
 import bzh.plealog.bioinfo.ui.blast.nav.BlastNavigator;
-import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTable;
-import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.bioinfo.ui.blast.saviewer.SeqAlignViewer;
 import bzh.plealog.bioinfo.ui.blast.summary.GraphicViewer;
 import bzh.plealog.bioinfo.ui.carto.data.BasicFeatureOrganizer;
@@ -57,7 +46,6 @@ import bzh.plealog.bioinfo.ui.carto.data.FGraphics;
 import bzh.plealog.bioinfo.ui.carto.data.FeatureOrganizerManager;
 import bzh.plealog.bioinfo.ui.carto.painter.FeaturePainter;
 import bzh.plealog.bioinfo.ui.resources.SVMessages;
-import bzh.plealog.bioinfo.ui.util.TableColumnManager;
 import bzh.plealog.blastviewer.msa.PhyloMSAPanel;
 
 import com.plealog.genericapp.api.EZEnvironment;
@@ -76,7 +64,6 @@ public class BlastViewerPanel extends JPanel {
 
   private static final long serialVersionUID = -2405089127382200483L;
 
-  protected SummaryTable _summaryTable;
   protected BlastHitTable _hitListPane;
   protected SeqAlignViewer _seqAlignViewer;
   protected BlastNavigator _summaryPane;
@@ -103,66 +90,6 @@ public class BlastViewerPanel extends JPanel {
    */
   public void setContent(BlastEntry entry) {
     _summaryPane.setContent(entry);
-    
-  //Prepare a View from the Model
-    InMemoryQuery query;
-    query = new InMemoryQuery();
-    List<SROutput> results = SRUtils.splitMultiResult(entry.getResult());
-    for(SROutput sro : results) {
-      query.addResult(sro);
-    }
-    // following is done manually, but real data can be retrieved 
-    // from bo object (not shown here)
-    query.setDatabankName("SwissProt");
-    query.setEngineSysName("blastp");
-    query.setJobName(entry.getName());
-    // a Blast result loaded from a file is always OK
-    query.setStatus(QueryBase.OK);
-    // query not provided in blastFile
-    query.setQueyPath("n/a");
-    // not appropriate here
-    query.setRID("n/a");
-    QueryBaseUI qBaseUI;
-    qBaseUI = new QueryBaseUI(query);
-    SummaryTableModel resultTableModel = new SummaryTableModel();
-    resultTableModel.setQuery(qBaseUI);
-    _summaryTable.setModel(resultTableModel);
-  }
-
-  /**
-   * Prepare a SummaryTable component.
-   * 
-   * @param blastQuery the query to display
-   */
-  private JComponent prepareSummaryTable() {
-    JPanel pnl;
-    SummaryTableModel resultTableModel;
-    SummaryTable resultTable;
-    JScrollPane scrollPaneRT;
-    TableColumnManager tcm;
-    
-    pnl = new JPanel(new BorderLayout());
-
-    // Result Table
-    resultTableModel = new SummaryTableModel();
-    resultTable = new SummaryTable(resultTableModel);
-    resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-    resultTable.getTableHeader().setReorderingAllowed(false);
-    resultTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-    resultTable.setColumnSelectionAllowed(false);
-    resultTable.setRowSelectionAllowed(true);
-    resultTable.setGridColor(Color.LIGHT_GRAY);
-
-    // Top Scroll Pane
-    scrollPaneRT = new JScrollPane(resultTable);
-    scrollPaneRT.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-    scrollPaneRT.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-    tcm = new TableColumnManager(resultTable, resultTableModel.getReferenceColumnHeaders());
-    scrollPaneRT.setCorner(JScrollPane.UPPER_RIGHT_CORNER, tcm.getInvoker());
-
-    pnl.add(scrollPaneRT, BorderLayout.CENTER);
-    _summaryTable = resultTable;
-    return pnl;
   }
 
   /**
@@ -255,7 +182,6 @@ public class BlastViewerPanel extends JPanel {
     } else {
       jtp = new JTabbedPane(JTabbedPane.TOP);
     }
-    jtp.add("Summary", prepareSummaryTable());
     jtp.add("Hits", _rightPane);
     jtp.add("Graphic", _cartoViewer);
     jtp.add("MSA", _msaPane);
