@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2016 Patrick G. Durand
+/* Copyright (C) 2003-2019 Patrick G. Durand
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -18,7 +18,6 @@ package bzh.plealog.blastviewer;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -172,6 +171,9 @@ public class BlastSummaryViewerPanel extends JPanel {
     return null;
   }
 
+  /**
+   * Wraps a SROutput object into a BlastEntry.
+   */
   private BlastEntry prepareEntry(SROutput bo, String soPath) {
     String val;
     int pos;
@@ -199,6 +201,9 @@ public class BlastSummaryViewerPanel extends JPanel {
     return new BlastEntry(program, queryName, soPath, bo, null, dbname, false);
   }
 
+  /**
+   * Prepare the viewer.
+   */
   private void createGUI() {
     _hitListPane = ConfigManager.getHitTableFactory().createViewer();
     JSplitPane jsp = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -211,15 +216,25 @@ public class BlastSummaryViewerPanel extends JPanel {
     this.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
   }
 
+  /**
+   * Listen to mouse selection on SummaryViewer. In response, displays details
+   * of selected SROutput into a BlastHitTable viewer.
+   */
   private class MyListSelectionListener implements ListSelectionListener {
     public void valueChanged(ListSelectionEvent event) {
+      //something to do?
       if (event.getValueIsAdjusting())
         return;
+      if (_summaryTable.getSelectedRowCount()!=1) {
+        _hitListPane.resetDataModel();
+        return;
+      }
       int row = _summaryTable.getSelectedRow();
       if (row<0) {
         _hitListPane.resetDataModel();
         return;
       }
+      //get selected SRoutput and display it within a BlastHitTable
       SROutput sro = (SROutput) _summaryTable.getValueAt(row, SummaryTableModel.RESULT_DATA_COL);
       SRIteration iter = sro.getIteration(0);
       if (iter == null || iter.countHit() == 0) {
@@ -242,13 +257,28 @@ public class BlastSummaryViewerPanel extends JPanel {
     }
   }
   
+  /**
+   * Listen to mouse double click on SummaryViewer. In response, displays details
+   * of selected SROutput into a full feature BlastHitTable JInternalFrame.
+   */
   private class MyMouseAdapter extends MouseAdapter {
     public void mousePressed(MouseEvent mouseEvent) {
       JTable table =(JTable) mouseEvent.getSource();
       if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
-        SROutput sro = (SROutput) _summaryTable.getValueAt(table.getSelectedRow(), SummaryTableModel.RESULT_DATA_COL); 
+        //get selected SROuput
+        SROutput sro = (SROutput) _summaryTable.getValueAt(
+            table.getSelectedRow(), 
+            SummaryTableModel.RESULT_DATA_COL); 
+        if (sro.isEmpty()) {
+          return;
+        }
+        
+        //prepare a copy to avoid altering original data in the coming viewer
         SROutput sro_copy = sro.clone(false);
+        //such a result only contains a single SRIteration on which we MUST
+        //reset ordering number to "1"
         sro_copy.getIteration(0).setIterationIterNum(1);
+        //start viewer
         BlastViewerOpener.displayInternalFrame(
             BlastViewerOpener.prepareViewer(sro_copy),
             sro.getBlastTypeStr(), null);
