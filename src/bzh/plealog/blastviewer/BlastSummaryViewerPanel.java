@@ -18,20 +18,34 @@ package bzh.plealog.blastviewer;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import com.plealog.genericapp.api.EZEnvironment;
+
+import bzh.plealog.bioinfo.api.data.searchjob.BFileSummary;
 import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
 import bzh.plealog.bioinfo.api.data.searchresult.SRIteration;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
@@ -46,7 +60,11 @@ import bzh.plealog.bioinfo.ui.blast.hittable.BlastHitTable;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTable;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.bioinfo.ui.resources.SVMessages;
+import bzh.plealog.bioinfo.ui.util.ProgressTinyDialog;
 import bzh.plealog.bioinfo.ui.util.TableColumnManager;
+import bzh.plealog.bioinfo.ui.util.TableSearcherComponent;
+import bzh.plealog.bioinfo.ui.util.TableSearcherComponentAPI;
+import bzh.plealog.bioinfo.ui.util.TableSearcherComponentAction;
 import bzh.plealog.blastviewer.util.BlastViewerOpener;
 
 /**
@@ -65,7 +83,12 @@ public class BlastSummaryViewerPanel extends JPanel {
   protected SummaryTable _summaryTable;
   protected BlastHitTable _hitListPane;
   private BlastEntry _entry;
-  
+  private JLabel _resultStatusTxt;
+  private JRadioButton          rbAllQueries;
+  private JRadioButton          rbMatchQueries;
+  private JRadioButton          rbNoMatchQueries;
+ private TableSearcherComponent _searcher;
+ 
   protected static final String HITPANEL_HEADER = SVMessages.getString("BlastViewerPanel.0");
   protected static final String HITPANEL_LIST = SVMessages.getString("BlastViewerPanel.1");
   protected static final String HITPANEL_GRAPHIC = SVMessages.getString("BlastViewerPanel.2");
@@ -105,7 +128,8 @@ public class BlastSummaryViewerPanel extends JPanel {
     resultTableModel.setQuery(qBaseUI);
     //set the data model and add the link between summary viewer and detail viewer
     _summaryTable.setModel(resultTableModel);
-    _summaryTable.setRowSelectionInterval(0, 0);
+    //_summaryTable.setRowSelectionInterval(0, 0);
+    updateViewTypeRows();
   }
 
   /**
@@ -206,14 +230,100 @@ public class BlastSummaryViewerPanel extends JPanel {
    */
   private void createGUI() {
     _hitListPane = ConfigManager.getHitTableFactory().createViewer();
+    
+    _resultStatusTxt = new JLabel();
+    _resultStatusTxt.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+    
+    JPanel viewTypePanel;
+
+    rbAllQueries = new JRadioButton("All queries");
+    rbAllQueries.addActionListener(new ViewAllQueriesRadioBtnListener());
+    rbMatchQueries = new JRadioButton("Matching queries");
+    rbMatchQueries.addActionListener(new ViewQueriesWithHitsRadioBtnListener());
+    rbNoMatchQueries = new JRadioButton("Not matching queries");
+    rbNoMatchQueries.addActionListener(new ViewQueriesWithNoHitsRadioBtnListener());
+
+    viewTypePanel = new JPanel();
+
+    viewTypePanel.add(rbAllQueries);
+    viewTypePanel.add(rbMatchQueries);
+    viewTypePanel.add(rbNoMatchQueries);
+
+    ButtonGroup group = new ButtonGroup();
+    group.add(rbAllQueries);
+    group.add(rbMatchQueries);
+    group.add(rbNoMatchQueries);
+
+    rbAllQueries.setSelected(true);
+    
+    JPanel pnlSearcher = new JPanel(new BorderLayout());
+    _searcher = new TableSearcherComponent(_summaryTable);
+    _searcher.addUserAction(EZEnvironment.getImageIcon("findNew_s.png"), new SearchNextActionListener());
+
+    pnlSearcher.add(viewTypePanel, BorderLayout.NORTH);
+    pnlSearcher.add(_searcher, BorderLayout.SOUTH);
+    
+    JPanel navPanel = new JPanel(new BorderLayout());
+    navPanel.add(pnlSearcher, BorderLayout.WEST);
+
+    JPanel summaryPanel = new JPanel(new BorderLayout());
+    summaryPanel.add(_resultStatusTxt, BorderLayout.NORTH);
+    summaryPanel.add(prepareSummaryTable(), BorderLayout.CENTER);
+    summaryPanel.add(navPanel, BorderLayout.SOUTH);
+    
     JSplitPane jsp = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-    jsp.setTopComponent(prepareSummaryTable());
+    jsp.setTopComponent(summaryPanel);
     jsp.setRightComponent(_hitListPane);
     jsp.setOneTouchExpandable(true);
-    jsp.setResizeWeight(0.75); 
+    jsp.setResizeWeight(0.75);
+
     this.setLayout(new BorderLayout());
+    this.add(_resultStatusTxt, BorderLayout.NORTH);
     this.add(jsp, BorderLayout.CENTER);
     this.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+  }
+
+  private void updateViewTypeRows() {
+    int rows = _summaryTable.getRowCount();
+
+    _resultStatusTxt.setText(rows + (rows > 1 ? " rows" : " row"));
+    EZEnvironment.setDefaultCursor();
+  }
+
+  /**
+   * Utility class to handle the display of all queries within the Result Table.
+   */
+  private class ViewAllQueriesRadioBtnListener implements ActionListener {
+    public void actionPerformed(ActionEvent e) {
+      if (_summaryTable.getRowCount() > 50000)
+        EZEnvironment.setWaitCursor();
+      _summaryTable.setViewType(SummaryTableModel.VIEW_TYPE.ALL);
+      updateViewTypeRows();
+    }
+  }
+
+  /**
+   * Utility class to handle the display of all queries within the Result Table.
+   */
+  private class ViewQueriesWithHitsRadioBtnListener implements ActionListener {
+    public void actionPerformed(ActionEvent e) {
+      if (_summaryTable.getRowCount() > 50000)
+        EZEnvironment.setWaitCursor();
+      _summaryTable.setViewType(SummaryTableModel.VIEW_TYPE.HITS_ONLY);
+      updateViewTypeRows();
+    }
+  }
+
+  /**
+   * Utility class to handle the display of all queries within the Result Table.
+   */
+  private class ViewQueriesWithNoHitsRadioBtnListener implements ActionListener {
+    public void actionPerformed(ActionEvent e) {
+      if (_summaryTable.getRowCount() > 50000)
+        EZEnvironment.setWaitCursor();
+      _summaryTable.setViewType(SummaryTableModel.VIEW_TYPE.NO_HITS_ONLY);
+      updateViewTypeRows();
+    }
   }
 
   /**
@@ -283,6 +393,137 @@ public class BlastSummaryViewerPanel extends JPanel {
             BlastViewerOpener.prepareViewer(sro_copy),
             sro.getBlastTypeStr(), null);
       }
+    }
   }
-}
+  protected class SelectThread extends Thread {
+    private String            searchText;
+    private TableSearcherComponentAPI caller;
+    private ProgressTinyDialog      monitor;
+
+    public SelectThread(String searchText, TableSearcherComponentAPI caller, ProgressTinyDialog monitor) {
+      this.searchText = searchText;
+      this.monitor = monitor;
+      this.caller = caller;
+    }
+
+    public void run() {
+      Enumeration<BFileSummary> summaries;
+      SummaryTableModel tModel;
+      BFileSummary bfs;
+      QueryBase query;
+      Pattern pattern;
+      Matcher matcher;
+      String value;
+      ListSelectionModel lsm;
+      ArrayList<Integer> indices;
+      int[] indicesArray;
+      int idx = 0, cols, i = 0, idx2, nFound = 0, firstIdx = -1;
+
+      query = (QueryBase) _summaryTable.getValueAt(0, SummaryTableModel.QUERY_DATA_COL);
+      if (query == null)
+        return;
+
+      summaries = query.getSummaries();
+      tModel = (SummaryTableModel) _summaryTable.getModel();
+      lsm = _summaryTable.getSelectionModel();
+      cols = tModel.getColumnCount();
+      monitor.setMaxSteps(tModel.getRowCount());
+      pattern = Pattern.compile(searchText.toLowerCase());
+      lsm.setValueIsAdjusting(true);
+      lsm.clearSelection();
+      indices = new ArrayList<Integer>();
+      while (summaries.hasMoreElements()) {
+        bfs = summaries.nextElement();
+
+        if (bfs == null)
+          break;
+        for (i = 0; i < cols; i++) {
+          value = SummaryTableModel.getValueItem(idx, tModel.getColumnId(i), bfs, null, query).toString();
+          matcher = pattern.matcher(value.toLowerCase());
+          if (matcher.find()) {
+            idx2 = _summaryTable.convertSummaryIdxToTableRow(idx);
+            if (idx2 != -1) {
+              lsm.addSelectionInterval(idx2, idx2);
+              if (firstIdx == -1) {
+                firstIdx = idx2;
+              }
+              indices.add(idx2);
+              nFound++;
+              break;
+            }
+          }
+        }
+        monitor.addToProgress(1);
+        if (monitor.stopProcessing())
+          break;
+        idx++;
+
+      }
+      monitor.dispose();
+      lsm.setValueIsAdjusting(false);
+      _resultStatusTxt.setText(nFound + " row" + (nFound != 1 ? "(s)" : "") + " selected");
+      if (firstIdx != -1) {
+        _summaryTable.scrollRectToVisible(_summaryTable.getCellRect(firstIdx, 0, false));
+        indicesArray = new int[nFound];
+        i = 0;
+        for (Integer indice : indices) {
+          indicesArray[i] = indice;
+          i++;
+        }
+        indices.clear();
+        indices = null;
+        caller.setPrecomputedIndex(indicesArray);
+      }
+    }
+  }
+
+  private class MainSelectThread extends Thread {
+    private String            searchText;
+    private TableSearcherComponentAPI caller;
+
+    public MainSelectThread(String searchText, TableSearcherComponentAPI caller) {
+      this.searchText = searchText;
+      this.caller = caller;
+    }
+
+    public void run() {
+      ProgressTinyDialog monitor = new ProgressTinyDialog("Searching for " + searchText + "...", 0, true, true, false);
+      new SelectThread(searchText, caller, monitor).start();
+      monitor.setVisible(true);
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class SearchNextActionListener extends AbstractAction implements TableSearcherComponentAction {
+    /**
+     *
+     */
+    private static final long     serialVersionUID  = -6543582685153860631L;
+    private String            searchText;
+    private TableSearcherComponentAPI caller;
+
+    @Override
+    public void actionPerformed(ActionEvent arg0) {
+      //BlastQuery query;
+
+      if (searchText == null)
+        return;
+      //query = (BlastQuery) _resultTable.getValueAt(0, ResultTableModel.QUERY_DATA_COL);
+      //if (query == null)
+      //  return;
+      _hitListPane.resetDataModel();
+      SwingUtilities.invokeLater(new MainSelectThread(searchText, caller));
+    }
+
+    @Override
+    public void setSearchText(String text) {
+      searchText = text;
+    }
+
+    @Override
+    public void setTableSearcherComponentActionGateway(TableSearcherComponentAPI caller) {
+      this.caller = caller;
+    }
+  }
+
 }
