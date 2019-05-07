@@ -24,16 +24,23 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
+import bzh.plealog.bioinfo.api.data.searchresult.SRIteration;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.api.data.searchresult.SRRequestInfo;
 import bzh.plealog.bioinfo.data.searchjob.InMemoryQuery;
 import bzh.plealog.bioinfo.data.searchresult.SRUtils;
+import bzh.plealog.bioinfo.ui.blast.config.ConfigManager;
 import bzh.plealog.bioinfo.ui.blast.core.BlastEntry;
+import bzh.plealog.bioinfo.ui.blast.core.BlastHitHspImplem;
 import bzh.plealog.bioinfo.ui.blast.core.QueryBaseUI;
+import bzh.plealog.bioinfo.ui.blast.hittable.BlastHitTable;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTable;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.bioinfo.ui.resources.SVMessages;
@@ -53,6 +60,8 @@ public class BlastSummaryViewerPanel extends JPanel {
   private static final long serialVersionUID = -2405089127382200483L;
 
   protected SummaryTable _summaryTable;
+  protected BlastHitTable _hitListPane;
+  private BlastEntry _entry;
   
   protected static final String HITPANEL_HEADER = SVMessages.getString("BlastViewerPanel.0");
   protected static final String HITPANEL_LIST = SVMessages.getString("BlastViewerPanel.1");
@@ -70,6 +79,7 @@ public class BlastSummaryViewerPanel extends JPanel {
    * Set the data to display in this viewer.
    */
   public void setContent(BlastEntry entry) {
+    _entry = entry;
     //Prepare a View from the Model
     InMemoryQuery query;
     query = new InMemoryQuery();
@@ -90,7 +100,9 @@ public class BlastSummaryViewerPanel extends JPanel {
     qBaseUI = new QueryBaseUI(query);
     SummaryTableModel resultTableModel = new SummaryTableModel();
     resultTableModel.setQuery(qBaseUI);
+    //set the data model and add the link between summary viewer and detail viewer
     _summaryTable.setModel(resultTableModel);
+    _summaryTable.setRowSelectionInterval(0, 0);
   }
 
   /**
@@ -126,6 +138,7 @@ public class BlastSummaryViewerPanel extends JPanel {
 
     pnl.add(scrollPaneRT, BorderLayout.CENTER);
     _summaryTable = resultTable;
+    _summaryTable.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
     return pnl;
   }
 
@@ -178,9 +191,45 @@ public class BlastSummaryViewerPanel extends JPanel {
   }
 
   private void createGUI() {
+    _hitListPane = ConfigManager.getHitTableFactory().createViewer();
+    JSplitPane jsp = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+    jsp.setTopComponent(prepareSummaryTable());
+    jsp.setRightComponent(_hitListPane);
+    jsp.setOneTouchExpandable(true);
+    jsp.setResizeWeight(0.75); 
     this.setLayout(new BorderLayout());
-    this.add(prepareSummaryTable(), BorderLayout.CENTER);
+    this.add(jsp, BorderLayout.CENTER);
     this.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
   }
 
+  private class MyListSelectionListener implements ListSelectionListener {
+    public void valueChanged(ListSelectionEvent event) {
+      if (event.getValueIsAdjusting())
+        return;
+      int row = _summaryTable.getSelectedRow();
+      if (row<0) {
+        _hitListPane.resetDataModel();
+        return;
+      }
+      SROutput sro = (SROutput) _summaryTable.getValueAt(row, SummaryTableModel.RESULT_DATA_COL);
+      SRIteration iter = sro.getIteration(0);
+      if (iter == null || iter.countHit() == 0) {
+        _hitListPane.resetDataModel();
+      } else {
+          int i, size;
+          BlastHitHspImplem[] bhh;
+          size = iter.countHit();
+          bhh = new BlastHitHspImplem[size];
+          for (i = 0; i < size; i++) {
+            bhh[i] = new BlastHitHspImplem(
+                iter.getHit(i), 
+                _entry.getBlastClientName(), 
+                1, 
+                iter.getIterationQueryLength(), 
+                _entry.getResult().getBlastType());
+          }
+        _hitListPane.setDataModel(bhh);
+      }
+    }
+  }
 }
