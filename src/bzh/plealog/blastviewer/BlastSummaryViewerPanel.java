@@ -18,6 +18,9 @@ package bzh.plealog.blastviewer;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -45,6 +48,7 @@ import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTable;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.bioinfo.ui.resources.SVMessages;
 import bzh.plealog.bioinfo.ui.util.TableColumnManager;
+import bzh.plealog.blastviewer.util.BlastViewerOpener;
 
 /**
  * This is the BlastViewer Main Module.
@@ -137,8 +141,13 @@ public class BlastSummaryViewerPanel extends JPanel {
     scrollPaneRT.setCorner(JScrollPane.UPPER_RIGHT_CORNER, tcm.getInvoker());
 
     pnl.add(scrollPaneRT, BorderLayout.CENTER);
+    
     _summaryTable = resultTable;
+    
+    //enable the display of a single SROutput within dedicated HitTable
     _summaryTable.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
+    //open a separate Full Viewer in response of a double click
+    _summaryTable.addMouseListener(new MyMouseAdapter());
     return pnl;
   }
 
@@ -232,4 +241,18 @@ public class BlastSummaryViewerPanel extends JPanel {
       }
     }
   }
+  
+  private class MyMouseAdapter extends MouseAdapter {
+    public void mousePressed(MouseEvent mouseEvent) {
+      JTable table =(JTable) mouseEvent.getSource();
+      if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
+        SROutput sro = (SROutput) _summaryTable.getValueAt(table.getSelectedRow(), SummaryTableModel.RESULT_DATA_COL); 
+        SROutput sro_copy = sro.clone(false);
+        sro_copy.getIteration(0).setIterationIterNum(1);
+        BlastViewerOpener.displayInternalFrame(
+            BlastViewerOpener.prepareViewer(sro_copy),
+            sro.getBlastTypeStr(), null);
+      }
+  }
+}
 }
