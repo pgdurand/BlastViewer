@@ -230,6 +230,7 @@ public class BlastSummaryViewerPanel extends JPanel {
    */
   private void createGUI() {
     _hitListPane = ConfigManager.getHitTableFactory().createViewer();
+    JComponent cmp = prepareSummaryTable();
     
     _resultStatusTxt = new JLabel();
     _resultStatusTxt.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -268,7 +269,7 @@ public class BlastSummaryViewerPanel extends JPanel {
 
     JPanel summaryPanel = new JPanel(new BorderLayout());
     summaryPanel.add(_resultStatusTxt, BorderLayout.NORTH);
-    summaryPanel.add(prepareSummaryTable(), BorderLayout.CENTER);
+    summaryPanel.add(cmp, BorderLayout.CENTER);
     summaryPanel.add(navPanel, BorderLayout.SOUTH);
     
     JSplitPane jsp = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -362,7 +363,8 @@ public class BlastSummaryViewerPanel extends JPanel {
                 iter.getIterationQueryLength(), 
                 _entry.getResult().getBlastType());
           }
-        _hitListPane.setDataModel(bhh);
+          _hitListPane.resetDataModel();
+          _hitListPane.setDataModel(bhh);
       }
     }
   }
@@ -493,11 +495,7 @@ public class BlastSummaryViewerPanel extends JPanel {
     }
   }
 
-  @SuppressWarnings("serial")
   private class SearchNextActionListener extends AbstractAction implements TableSearcherComponentAction {
-    /**
-     *
-     */
     private static final long     serialVersionUID  = -6543582685153860631L;
     private String            searchText;
     private TableSearcherComponentAPI caller;
