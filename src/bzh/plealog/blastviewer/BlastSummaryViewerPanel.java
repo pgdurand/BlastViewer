@@ -47,14 +47,13 @@ import com.plealog.genericapp.api.EZEnvironment;
 
 import bzh.plealog.bioinfo.api.data.searchjob.BFileSummary;
 import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
-import bzh.plealog.bioinfo.api.data.searchresult.SRIteration;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.api.data.searchresult.SRRequestInfo;
 import bzh.plealog.bioinfo.data.searchjob.InMemoryQuery;
 import bzh.plealog.bioinfo.data.searchresult.SRUtils;
 import bzh.plealog.bioinfo.ui.blast.config.ConfigManager;
 import bzh.plealog.bioinfo.ui.blast.core.BlastEntry;
-import bzh.plealog.bioinfo.ui.blast.core.BlastHitHspImplem;
+import bzh.plealog.bioinfo.ui.blast.core.BlastIteration;
 import bzh.plealog.bioinfo.ui.blast.core.QueryBaseUI;
 import bzh.plealog.bioinfo.ui.blast.hittable.BlastHitTable;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTable;
@@ -192,7 +191,13 @@ public class BlastSummaryViewerPanel extends JPanel {
    * Return the result currently selected in this ViewerPanel.
    */
   public SROutput getSelectedResult() {
-    return null;
+    int row = _summaryTable.getSelectedRow();
+    if (row<0) {
+      return null;
+    }
+    else {
+      return (SROutput) _summaryTable.getValueAt(row, SummaryTableModel.RESULT_DATA_COL);
+    }
   }
 
   /**
@@ -345,27 +350,11 @@ public class BlastSummaryViewerPanel extends JPanel {
         _hitListPane.resetDataModel();
         return;
       }
-      //get selected SRoutput and display it within a BlastHitTable
-      SROutput sro = (SROutput) _summaryTable.getValueAt(row, SummaryTableModel.RESULT_DATA_COL);
-      SRIteration iter = sro.getIteration(0);
-      if (iter == null || iter.countHit() == 0) {
-        _hitListPane.resetDataModel();
-      } else {
-          int i, size;
-          BlastHitHspImplem[] bhh;
-          size = iter.countHit();
-          bhh = new BlastHitHspImplem[size];
-          for (i = 0; i < size; i++) {
-            bhh[i] = new BlastHitHspImplem(
-                iter.getHit(i), 
-                _entry.getBlastClientName(), 
-                1, 
-                iter.getIterationQueryLength(), 
-                _entry.getResult().getBlastType());
-          }
-          _hitListPane.resetDataModel();
-          _hitListPane.setDataModel(bhh);
-      }
+      row = _summaryTable.convertSelectedRowToSelectedSummary(row);
+      BlastIteration blastIter = new BlastIteration(_entry, row);
+      _hitListPane.resetDataModel();
+      _hitListPane.setDataModel(blastIter);
+        _hitListPane.repaint();
     }
   }
   

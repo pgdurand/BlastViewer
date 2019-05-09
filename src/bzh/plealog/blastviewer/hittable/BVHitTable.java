@@ -21,6 +21,7 @@ import javax.swing.JButton;
 import javax.swing.JToolBar;
 
 import bzh.plealog.bioinfo.ui.blast.hittable.BlastHitTable;
+import bzh.plealog.blastviewer.actions.api.BVAction;
 import bzh.plealog.blastviewer.actions.api.BVActionManager;
 import bzh.plealog.blastviewer.actions.api.BVGenericAction;
 import bzh.plealog.blastviewer.actions.hittable.EditColorPolicyAction;
@@ -58,18 +59,19 @@ public class BVHitTable extends BlastHitTable {
 
   protected JToolBar getToolbar() {
     JButton btn;
-
+    BVGenericAction gAction;
     JToolBar tBar;
 
     tBar = new JToolBar();
     tBar.setFloatable(false);
     
-    for (BVGenericAction act : BVActionManager.getActions()){
-      btn = tBar.add(act);
-      act.setHitTable(this);
-      act.setEnabled(true);
-      if (act.getAction().getDescription()!=null){
-        btn.setToolTipText(act.getAction().getDescription());
+    for (BVAction act : BVActionManager.getActions()){
+      gAction = new BVGenericAction(act);
+      btn = tBar.add(gAction);
+      gAction.setHitTable(this);
+      gAction.setEnabled(true);
+      if (gAction.getAction().getDescription()!=null){
+        btn.setToolTipText(gAction.getAction().getDescription());
       }
     }
     

@@ -20,11 +20,15 @@ import java.awt.Dimension;
 
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+
+import com.plealog.genericapp.api.EZApplicationBranding;
+import com.plealog.genericapp.api.EZEnvironment;
+import com.plealog.genericapp.api.log.EZLogger;
 
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.api.filter.BFilter;
 import bzh.plealog.bioinfo.api.filter.config.FilterSystemConfigurator;
+import bzh.plealog.bioinfo.data.searchresult.SRUtils;
 import bzh.plealog.bioinfo.ui.filter.BFilterEditorListener;
 import bzh.plealog.bioinfo.ui.filter.BFilterEntry;
 import bzh.plealog.bioinfo.ui.filter.BFilterTable;
@@ -33,10 +37,6 @@ import bzh.plealog.bioinfo.ui.modules.filter.FilterSystemUI;
 import bzh.plealog.blastviewer.actions.api.BVActionImplem;
 import bzh.plealog.blastviewer.resources.BVMessages;
 import bzh.plealog.blastviewer.util.BlastViewerOpener;
-
-import com.plealog.genericapp.api.EZApplicationBranding;
-import com.plealog.genericapp.api.EZEnvironment;
-import com.plealog.genericapp.api.log.EZLogger;
 
 /* Future evolution:
  * Provide a generic way to add action:
@@ -104,40 +104,37 @@ public class FilterEntryAction extends BVActionImplem {
 
   @Override
   public void execute(final SROutput sro, int iterationID, int[] selectedHits) {
-    if (isRunning())
+    if (isRunning() || sro==null || sro.isEmpty())
       return;
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        // get a filter from user
-        BFilter filter = getFilter();
-        
-        // dialog cancelled ?
-        if (filter == null)
-          return;
-        lock(true);
-        try {
-          EZLogger.info(String.format(
-              BVMessages.getString("FilterEntryAction.msg1"),
-              filter.getTxtString()));
 
-          //apply the filter
-          SROutput sro2 = filter.execute(sro);
+    // get a filter from user
+    BFilter filter = getFilter();
+    
+    // dialog cancelled ?
+    if (filter == null)
+      return;
+    lock(true);
+    try {
+      EZLogger.info(String.format(
+          BVMessages.getString("FilterEntryAction.msg1"),
+          filter.getTxtString()));
 
-          // any results?
-          if (sro2 == null || sro2.isEmpty()) {
-            EZEnvironment.displayInfoMessage(EZEnvironment.getParentFrame(),
-                BVMessages.getString("FilterEntryAction.msg2"));
-            return;
-          }
-          // yes: open a new viewer
-          BlastViewerOpener.displayInternalFrame(
-              BlastViewerOpener.prepareViewer(sro2),
-              BVMessages.getString("FilterEntryAction.header"), null);
-        } finally {
-          lock(false);
-        }
+      //apply the filter
+      SROutput sro_to_filter = SRUtils.extractResult(sro, iterationID);
+      SROutput sro2 = filter.execute(sro_to_filter);
+
+      // any results?
+      if (sro2 == null || sro2.isEmpty()) {
+        EZEnvironment.displayInfoMessage(EZEnvironment.getParentFrame(),
+            BVMessages.getString("FilterEntryAction.msg2"));
+        return;
       }
-    });
+      // yes: open a new viewer
+      BlastViewerOpener.displayInternalFrame(
+          BlastViewerOpener.prepareViewer(sro2),
+          BVMessages.getString("FilterEntryAction.header"), null);
+    } finally {
+      lock(false);
+    }
   }
 }

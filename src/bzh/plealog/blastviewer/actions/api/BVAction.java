@@ -62,7 +62,7 @@ public interface BVAction {
    *          the Blast result
    * @param iterationID
    *          the iteration ordering number currently displayed in the
-   *          BlastViewer.
+   *          BlastViewer. Zero-based value.
    * @param selectedHits
    *          selected hit ordering numbers
    */

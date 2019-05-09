@@ -21,11 +21,12 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 
-import bzh.plealog.bioinfo.ui.blast.hittable.BlastHitTable;
-import bzh.plealog.blastviewer.resources.BVMessages;
-
 import com.plealog.genericapp.api.EZEnvironment;
 import com.plealog.genericapp.api.log.EZLogger;
+
+import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
+import bzh.plealog.bioinfo.ui.blast.hittable.BlastHitTable;
+import bzh.plealog.blastviewer.resources.BVMessages;
 
 /**
  * This class implements a generic action. Action execution is delegated to
@@ -69,8 +70,13 @@ public class BVGenericAction extends AbstractAction {
       @Override
       public void run() {
         try {
-          _act.execute(_hitTable.getResult(), _hitTable.getSelectedIteration(),
-              _hitTable.getSelectedHits());
+          SROutput sro = _hitTable.getResult();
+          int iterNum = _hitTable.getSelectedIteration();
+          int [] selHits = _hitTable.getSelectedHits();
+          _act.execute(
+              sro, 
+              iterNum,
+              selHits);
         } catch (Throwable t) {
           EZLogger.warn(BVMessages.getString("OpenFileAction.err")
               + t.toString());

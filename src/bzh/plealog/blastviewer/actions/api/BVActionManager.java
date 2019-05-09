@@ -26,7 +26,7 @@ import java.util.List;
  */
 public class BVActionManager {
 
-  private static ArrayList<BVGenericAction> actions = new ArrayList<>();
+  private static ArrayList<BVAction> actions = new ArrayList<>();
   
   /**
    * Add an action.
@@ -34,7 +34,7 @@ public class BVActionManager {
    * @param act an action
    */
   public static void addAction(BVAction act){
-    actions.add(new BVGenericAction(act));
+    actions.add(act);
   }
   
   /**
@@ -42,7 +42,7 @@ public class BVActionManager {
    * 
    * @return a list of actions.
    */
-  public static List<BVGenericAction> getActions(){
+  public static List<BVAction> getActions(){
     return actions;
   }
 }

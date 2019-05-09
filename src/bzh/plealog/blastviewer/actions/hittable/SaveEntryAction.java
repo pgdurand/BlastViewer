@@ -19,16 +19,16 @@ package bzh.plealog.blastviewer.actions.hittable;
 import java.io.File;
 
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
-
-import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
-import bzh.plealog.bioinfo.api.data.searchresult.io.SRWriter;
-import bzh.plealog.bioinfo.io.searchresult.SerializerSystemFactory;
-import bzh.plealog.blastviewer.actions.api.BVActionImplem;
 
 import com.plealog.genericapp.api.EZEnvironment;
 import com.plealog.genericapp.api.file.EZFileManager;
 import com.plealog.genericapp.api.log.EZLogger;
+
+import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
+import bzh.plealog.bioinfo.api.data.searchresult.io.SRWriter;
+import bzh.plealog.bioinfo.data.searchresult.SRUtils;
+import bzh.plealog.bioinfo.io.searchresult.SerializerSystemFactory;
+import bzh.plealog.blastviewer.actions.api.BVActionImplem;
 
 /**
  * This class implements the action to save a Blast result in a new file.
@@ -53,33 +53,28 @@ public class SaveEntryAction extends BVActionImplem {
 
   @Override
   public void execute(final SROutput sro, int iterationID, int[] selectedHits) {
-    if (isRunning())
+    if (isRunning() || sro==null || sro.isEmpty())
       return;
-
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        // get a filter from user
-        File file = EZFileManager.chooseFileForSaveAction("Save");
-        
-        // dialog cancelled ?
-        if (file == null)
-          return;
-        
-        // start saving
-        lock(true);
-        try {
-          SRWriter writer = SerializerSystemFactory.getWriterInstance(SerializerSystemFactory.NCBI_WRITER);
-          writer.write(file, sro);
-        }
-        catch(Exception ex){
-          EZLogger.warn(ex.toString());
-          EZEnvironment.displayWarnMessage(EZEnvironment.getParentFrame(), "Unable to save results.");
-        }
-        finally {
-          lock(false);
-        }
-      }
-    }); 
+    // get a filter from user
+    File file = EZFileManager.chooseFileForSaveAction("Save");
+    
+    // dialog cancelled ?
+    if (file == null)
+      return;
+    
+    // start saving
+    lock(true);
+    try {
+      SRWriter writer = SerializerSystemFactory.getWriterInstance(SerializerSystemFactory.NCBI_WRITER);
+      SROutput sro_to_save = SRUtils.extractResult(sro, iterationID);
+      writer.write(file, sro_to_save);
+    }
+    catch(Exception ex){
+      EZLogger.warn(ex.toString());
+      EZEnvironment.displayWarnMessage(EZEnvironment.getParentFrame(), "Unable to save results.");
+    }
+    finally {
+      lock(false);
+    }
   }
 }
