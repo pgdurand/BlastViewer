@@ -31,6 +31,8 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -38,6 +40,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -58,12 +61,14 @@ import bzh.plealog.bioinfo.ui.blast.core.QueryBaseUI;
 import bzh.plealog.bioinfo.ui.blast.hittable.BlastHitTable;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTable;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
-import bzh.plealog.bioinfo.ui.resources.SVMessages;
 import bzh.plealog.bioinfo.ui.util.ProgressTinyDialog;
 import bzh.plealog.bioinfo.ui.util.TableColumnManager;
 import bzh.plealog.bioinfo.ui.util.TableSearcherComponent;
 import bzh.plealog.bioinfo.ui.util.TableSearcherComponentAPI;
 import bzh.plealog.bioinfo.ui.util.TableSearcherComponentAction;
+import bzh.plealog.blastviewer.actions.summary.GlobalFilterAction;
+import bzh.plealog.blastviewer.actions.summary.GlobalSaveAction;
+import bzh.plealog.blastviewer.resources.BVMessages;
 import bzh.plealog.blastviewer.util.BlastViewerOpener;
 
 /**
@@ -83,15 +88,13 @@ public class BlastSummaryViewerPanel extends JPanel {
   protected BlastHitTable _hitListPane;
   private BlastEntry _entry;
   private JLabel _resultStatusTxt;
-  private JRadioButton          rbAllQueries;
-  private JRadioButton          rbMatchQueries;
-  private JRadioButton          rbNoMatchQueries;
- private TableSearcherComponent _searcher;
- 
-  protected static final String HITPANEL_HEADER = SVMessages.getString("BlastViewerPanel.0");
-  protected static final String HITPANEL_LIST = SVMessages.getString("BlastViewerPanel.1");
-  protected static final String HITPANEL_GRAPHIC = SVMessages.getString("BlastViewerPanel.2");
-
+  private JRadioButton          _rbAllQueries;
+  private JRadioButton          _rbMatchQueries;
+  private JRadioButton          _rbNoMatchQueries;
+  private TableSearcherComponent _searcher;
+  private GlobalFilterAction _filterAction;
+  private GlobalSaveAction _saveAction;
+  
   /**
    * Default constructor.
    */
@@ -105,6 +108,9 @@ public class BlastSummaryViewerPanel extends JPanel {
    */
   public void setContent(BlastEntry entry) {
     _entry = entry;
+    _filterAction.setResult(entry.getResult());
+    _saveAction.setResult(entry.getResult());
+    
     //Prepare a View from the Model
     InMemoryQuery query;
     query = new InMemoryQuery();
@@ -242,25 +248,25 @@ public class BlastSummaryViewerPanel extends JPanel {
     
     JPanel viewTypePanel;
 
-    rbAllQueries = new JRadioButton("All queries");
-    rbAllQueries.addActionListener(new ViewAllQueriesRadioBtnListener());
-    rbMatchQueries = new JRadioButton("Matching queries");
-    rbMatchQueries.addActionListener(new ViewQueriesWithHitsRadioBtnListener());
-    rbNoMatchQueries = new JRadioButton("Not matching queries");
-    rbNoMatchQueries.addActionListener(new ViewQueriesWithNoHitsRadioBtnListener());
+    _rbAllQueries = new JRadioButton("All queries");
+    _rbAllQueries.addActionListener(new ViewAllQueriesRadioBtnListener());
+    _rbMatchQueries = new JRadioButton("Matching queries");
+    _rbMatchQueries.addActionListener(new ViewQueriesWithHitsRadioBtnListener());
+    _rbNoMatchQueries = new JRadioButton("Not matching queries");
+    _rbNoMatchQueries.addActionListener(new ViewQueriesWithNoHitsRadioBtnListener());
 
     viewTypePanel = new JPanel();
 
-    viewTypePanel.add(rbAllQueries);
-    viewTypePanel.add(rbMatchQueries);
-    viewTypePanel.add(rbNoMatchQueries);
+    viewTypePanel.add(_rbAllQueries);
+    viewTypePanel.add(_rbMatchQueries);
+    viewTypePanel.add(_rbNoMatchQueries);
 
     ButtonGroup group = new ButtonGroup();
-    group.add(rbAllQueries);
-    group.add(rbMatchQueries);
-    group.add(rbNoMatchQueries);
+    group.add(_rbAllQueries);
+    group.add(_rbMatchQueries);
+    group.add(_rbNoMatchQueries);
 
-    rbAllQueries.setSelected(true);
+    _rbAllQueries.setSelected(true);
     
     JPanel pnlSearcher = new JPanel(new BorderLayout());
     _searcher = new TableSearcherComponent(_summaryTable);
@@ -271,7 +277,8 @@ public class BlastSummaryViewerPanel extends JPanel {
     
     JPanel navPanel = new JPanel(new BorderLayout());
     navPanel.add(pnlSearcher, BorderLayout.WEST);
-
+    navPanel.add(getToolbar(), BorderLayout.EAST);
+    
     JPanel summaryPanel = new JPanel(new BorderLayout());
     summaryPanel.add(_resultStatusTxt, BorderLayout.NORTH);
     summaryPanel.add(cmp, BorderLayout.CENTER);
@@ -296,6 +303,38 @@ public class BlastSummaryViewerPanel extends JPanel {
     EZEnvironment.setDefaultCursor();
   }
 
+  private JToolBar getToolbar() {
+    JToolBar tBar;
+    ImageIcon icon;
+    JButton btn;
+
+    tBar = new JToolBar();
+    tBar.setFloatable(false);
+
+    icon = EZEnvironment.getImageIcon("filterRes.png");
+    if (icon != null) {
+      _filterAction = new GlobalFilterAction("", icon);
+    } else {
+      _filterAction = new GlobalFilterAction(BVMessages.getString("BlastHitList.filter.btn"));
+    }
+    _filterAction.setEnabled(true);
+    btn = tBar.add(_filterAction);
+    btn.setToolTipText(BVMessages.getString("BlastHitList.filter.tip"));
+    btn.setText(BVMessages.getString("BlastHitList.filter.btn"));
+
+    icon = EZEnvironment.getImageIcon("save.png");
+    if (icon != null) {
+      _saveAction = new GlobalSaveAction("", icon);
+    } else {
+      _saveAction = new GlobalSaveAction(BVMessages.getString("BlastHitList.save.btn"));
+    }
+    _saveAction.setEnabled(true);
+    btn = tBar.add(_saveAction);
+    btn.setToolTipText(BVMessages.getString("BlastHitList.save.tip"));
+    btn.setText(BVMessages.getString("BlastHitList.save.btn"));
+    
+    return tBar;
+  }
   /**
    * Utility class to handle the display of all queries within the Result Table.
    */
