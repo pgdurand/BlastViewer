@@ -76,6 +76,7 @@ public class BlastViewerOpener {
   public static void setHelperMessage(String msg) {
     if (msg == null) {
       cleanHelperMessage();
+      return;
     }
     _helperField.setText(msg);
     _helperField.setIcon(WORKING_ICON);

@@ -43,8 +43,8 @@ import com.plealog.genericapp.api.log.EZLogger;
 public class OpenSampleFileAction extends AbstractAction {
   private static final long serialVersionUID = -3984245135396746453L;
 
-  private static final String NCBI_BLAST_SAMPLE = "p12253-refseq.xml";
-  
+  //private static final String NCBI_BLAST_SAMPLE = "p12253-refseq.xml";
+  private static final String NCBI_BLAST_SAMPLE = "blastp-71queries-swissprot.xml";
   /**
    * Action constructor.
    * 
