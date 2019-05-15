@@ -41,6 +41,19 @@ import javax.swing.SwingConstants;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.BasicConfigurator;
 
+import com.plealog.genericapp.api.EZApplicationBranding;
+import com.plealog.genericapp.api.EZEnvironment;
+import com.plealog.genericapp.api.EZGenericApplication;
+import com.plealog.genericapp.api.EZUIStarterListener;
+import com.plealog.genericapp.api.file.EZFileUtils;
+import com.plealog.genericapp.api.log.EZLogger;
+import com.plealog.genericapp.api.log.EZLoggerManager;
+import com.plealog.genericapp.api.log.EZLoggerManager.LogLevel;
+import com.plealog.genericapp.api.log.EZSingleLineFormatter;
+import com.plealog.genericapp.ui.desktop.CascadingWindowPositioner;
+import com.plealog.genericapp.ui.desktop.GDesktopPane;
+import com.plealog.genericapp.ui.desktop.JWindowsMenu;
+
 import bzh.plealog.bioinfo.api.core.config.CoreSystemConfigurator;
 import bzh.plealog.bioinfo.api.filter.config.FilterSystemConfigurator;
 import bzh.plealog.bioinfo.ui.blast.config.ConfigManager;
@@ -48,6 +61,7 @@ import bzh.plealog.bioinfo.ui.blast.config.color.ColorPolicyConfig;
 import bzh.plealog.bioinfo.ui.config.UISystemConfigurator;
 import bzh.plealog.bioinfo.ui.modules.filter.FilterManagerUI;
 import bzh.plealog.bioinfo.ui.modules.filter.FilterSystemUI;
+import bzh.plealog.bioinfo.ui.util.MemoryMeter;
 import bzh.plealog.blastviewer.actions.api.BVAction;
 import bzh.plealog.blastviewer.actions.api.BVActionManager;
 import bzh.plealog.blastviewer.actions.hittable.FilterEntryAction;
@@ -62,19 +76,6 @@ import bzh.plealog.blastviewer.hittable.BVHitTableFactoryImplem;
 import bzh.plealog.blastviewer.resources.BVMessages;
 import bzh.plealog.blastviewer.util.BlastTransferHandler;
 import bzh.plealog.blastviewer.util.BlastViewerOpener;
-
-import com.plealog.genericapp.api.EZApplicationBranding;
-import com.plealog.genericapp.api.EZEnvironment;
-import com.plealog.genericapp.api.EZGenericApplication;
-import com.plealog.genericapp.api.EZUIStarterListener;
-import com.plealog.genericapp.api.file.EZFileUtils;
-import com.plealog.genericapp.api.log.EZLogger;
-import com.plealog.genericapp.api.log.EZLoggerManager;
-import com.plealog.genericapp.api.log.EZLoggerManager.LogLevel;
-import com.plealog.genericapp.api.log.EZSingleLineFormatter;
-import com.plealog.genericapp.ui.desktop.CascadingWindowPositioner;
-import com.plealog.genericapp.ui.desktop.GDesktopPane;
-import com.plealog.genericapp.ui.desktop.JWindowsMenu;
 
 /**
  * Starter class for the Blast Viewer software.
@@ -345,13 +346,20 @@ public class BlastViewer {
       mnuPnl.add(menuBar, BorderLayout.WEST);
       mnuPnl.add(logBtn, BorderLayout.EAST);
       _btnPanel.add(mnuPnl, BorderLayout.EAST);
-      hlpPnl = new JPanel(new GridBagLayout());
-      hlpPnl.add(BlastViewerOpener.getHelperField());
-      _btnPanel.add(hlpPnl, BorderLayout.CENTER);
+      //hlpPnl = new JPanel(new GridBagLayout());
+      //hlpPnl.add(BlastViewerOpener.getHelperField());
+      //_btnPanel.add(hlpPnl, BorderLayout.CENTER);
       _btnPanel.add(getToolbar(), BorderLayout.WEST);
       dpanel.add(_btnPanel, BorderLayout.NORTH);
       dpanel.add(_desktop, BorderLayout.CENTER);
 
+      JPanel statusBar = new JPanel(new BorderLayout());
+      hlpPnl = new JPanel(new BorderLayout());
+      hlpPnl.add(BlastViewerOpener.getHelperField(), BorderLayout.WEST);
+      statusBar.add(new MemoryMeter(), BorderLayout.WEST);
+      statusBar.add(hlpPnl, BorderLayout.CENTER);
+      dpanel.add(statusBar, BorderLayout.SOUTH);
+      
       BlastViewerOpener.setDesktop(_desktop);
 
       return dpanel;
