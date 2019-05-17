@@ -48,8 +48,8 @@ import javax.swing.event.ListSelectionListener;
 
 import com.plealog.genericapp.api.EZEnvironment;
 
-import bzh.plealog.bioinfo.api.data.searchjob.BFileSummary;
 import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
+import bzh.plealog.bioinfo.api.data.searchjob.SRFileSummary;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.api.data.searchresult.SRRequestInfo;
 import bzh.plealog.bioinfo.data.searchjob.InMemoryQuery;
@@ -437,9 +437,9 @@ public class BlastSummaryViewerPanel extends JPanel {
     }
 
     public void run() {
-      Enumeration<BFileSummary> summaries;
+      Enumeration<SRFileSummary> summaries;
       SummaryTableModel tModel;
-      BFileSummary bfs;
+      SRFileSummary bfs;
       QueryBase query;
       Pattern pattern;
       Matcher matcher;
@@ -468,7 +468,7 @@ public class BlastSummaryViewerPanel extends JPanel {
         if (bfs == null)
           break;
         for (i = 0; i < cols; i++) {
-          value = SummaryTableModel.getValueItem(idx, tModel.getColumnId(i), bfs, null, query).toString();
+          value = tModel.getValueItem(idx, tModel.getColumnId(i), bfs, null, query).toString();
           matcher = pattern.matcher(value.toLowerCase());
           if (matcher.find()) {
             idx2 = _summaryTable.convertSummaryIdxToTableRow(idx);
