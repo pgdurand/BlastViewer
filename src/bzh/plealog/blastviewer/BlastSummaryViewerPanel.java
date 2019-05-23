@@ -66,6 +66,7 @@ import bzh.plealog.bioinfo.ui.util.TableColumnManager;
 import bzh.plealog.bioinfo.ui.util.TableSearcherComponent;
 import bzh.plealog.bioinfo.ui.util.TableSearcherComponentAPI;
 import bzh.plealog.bioinfo.ui.util.TableSearcherComponentAction;
+import bzh.plealog.blastviewer.actions.summary.ChooseClassificationAction;
 import bzh.plealog.blastviewer.actions.summary.GlobalFilterAction;
 import bzh.plealog.blastviewer.actions.summary.GlobalSaveAction;
 import bzh.plealog.blastviewer.resources.BVMessages;
@@ -94,6 +95,7 @@ public class BlastSummaryViewerPanel extends JPanel {
   private TableSearcherComponent _searcher;
   private GlobalFilterAction _filterAction;
   private GlobalSaveAction _saveAction;
+  private ChooseClassificationAction _classifSelectAction;
   
   /**
    * Default constructor.
@@ -110,6 +112,7 @@ public class BlastSummaryViewerPanel extends JPanel {
     _entry = entry;
     _filterAction.setResult(entry.getResult());
     _saveAction.setResult(entry.getResult());
+    _classifSelectAction.setTable(_summaryTable);
     
     //Prepare a View from the Model
     InMemoryQuery query;
@@ -311,6 +314,19 @@ public class BlastSummaryViewerPanel extends JPanel {
     tBar = new JToolBar();
     tBar.setFloatable(false);
 
+    icon = EZEnvironment.getImageIcon("meta_path_24_24.png");
+    if (icon != null) {
+      _classifSelectAction = new ChooseClassificationAction("", icon);
+    } else {
+      _classifSelectAction = new ChooseClassificationAction(BVMessages.getString("BlastHitList.classif.btn"));
+    }
+    _classifSelectAction.setEnabled(true);
+    btn = tBar.add(_classifSelectAction);
+    btn.setToolTipText(BVMessages.getString("BlastHitList.classif.tip"));
+    btn.setText(BVMessages.getString("BlastHitList.classif.btn"));
+
+    tBar.addSeparator();
+    
     icon = EZEnvironment.getImageIcon("filterRes.png");
     if (icon != null) {
       _filterAction = new GlobalFilterAction("", icon);
@@ -332,6 +348,7 @@ public class BlastSummaryViewerPanel extends JPanel {
     btn = tBar.add(_saveAction);
     btn.setToolTipText(BVMessages.getString("BlastHitList.save.tip"));
     btn.setText(BVMessages.getString("BlastHitList.save.btn"));
+    
     
     return tBar;
   }
