@@ -10,7 +10,7 @@ This is the BlastViewer Tool. It aims at displaying in a graphical way results f
 
 ## Requirements
 
-Use a [Java Virtual Machine](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 1.7 (or above) from Oracle. 
+Use a [Java Virtual Machine](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 1.8 (or above) from Oracle. 
 
 *Not tested with any other JVM providers but Oracle... so there is no guarantee that the software will work as expected if not using Oracle's JVM.*
 
@@ -37,4 +37,4 @@ So, during my holidays on Summer 2004, I started a wonderful story: the creation
 Korilog ceased its activities on June 2015, therefore I decided to release these UI components to the open source community... just in time for Christmas 2016! ;-) 
 
 --
-(c) 2003-2017 - Patrick G. Durand
+(c) 2003-2019 - Patrick G. Durand
