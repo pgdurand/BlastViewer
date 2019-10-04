@@ -68,7 +68,7 @@ public class ChooseClassificationAction extends AbstractAction {
   }
 
   /**
-   * Set data to filter.
+   * Set data object.
    */
   public void setTable(SummaryTable table) {
     _table = table;
