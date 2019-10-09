@@ -1,10 +1,13 @@
 # BlastViewer
 
-[![License](https://img.shields.io/badge/license-Affero%20GPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.txt) [![Build Status](https://travis-ci.org/pgdurand/BlastViewer.svg?branch=master)](https://travis-ci.org/pgdurand/BlastViewer) [![](https://tokei.rs/b1/github/pgdurand/BlastViewer?category=code)](https://github.com/pgdurand/BlastViewer) [![](https://img.shields.io/badge/platform-Java--1.7+-yellow.svg)](http://www.oracle.com/technetwork/java/javase/downloads/index.html) [![](https://img.shields.io/badge/run_on-Linux--Mac_OSX--Windows-yellowgreen.svg)]()
+[![License](https://img.shields.io/badge/license-Affero%20GPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.txt) [![Build Status](https://travis-ci.org/pgdurand/BlastViewer.svg?branch=master)](https://travis-ci.org/pgdurand/BlastViewer) [![](https://tokei.rs/b1/github/pgdurand/BlastViewer?category=code)](https://github.com/pgdurand/BlastViewer) [![](https://img.shields.io/badge/platform-Java--1.8+-yellow.svg)](http://www.oracle.com/technetwork/java/javase/downloads/index.html) [![](https://img.shields.io/badge/run_on-Linux--macOS--Windows-yellowgreen.svg)]()
 
 ## Introduction
 
 This is the BlastViewer Tool. It aims at displaying in a graphical way results from the NCBI BLAST software.
+
+
+![BlastViewer](doc/BlastViewer-multiquery-with-BCO.png)
 
 ![BlastViewer](doc/BlastViewer.png)
 
