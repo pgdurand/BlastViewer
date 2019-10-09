@@ -51,6 +51,7 @@ import com.plealog.genericapp.api.EZEnvironment;
 import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
 import bzh.plealog.bioinfo.api.data.searchjob.SRFileSummary;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
+import bzh.plealog.bioinfo.api.data.searchresult.SROutput.FEATURES_CONTAINER;
 import bzh.plealog.bioinfo.api.data.searchresult.SRRequestInfo;
 import bzh.plealog.bioinfo.data.searchjob.InMemoryQuery;
 import bzh.plealog.bioinfo.data.searchresult.SRUtils;
@@ -190,6 +191,7 @@ public class BlastSummaryViewerPanel extends JPanel {
    */
   public void setContent(SROutput so, String soPath) {
     setContent(prepareEntry(so, soPath));
+    updateActions(so);
   }
 
   /**
@@ -197,6 +199,7 @@ public class BlastSummaryViewerPanel extends JPanel {
    */
   public void setContent(SROutput so) {
     setContent(prepareEntry(so, null));
+    updateActions(so);
   }
 
   /**
@@ -239,9 +242,19 @@ public class BlastSummaryViewerPanel extends JPanel {
     obj = bri.getValue(SRRequestInfo.QUERY_DEF_DESCRIPTOR_KEY);
     String queryName = obj != null ? obj.toString() : "?";
 
+    
     return new BlastEntry(program, queryName, soPath, bo, null, dbname, false);
   }
 
+  /**
+   * Update viewer actions according to data.
+   */
+  private void updateActions(SROutput bo) {
+    if (bo.checkFeatures().equals(FEATURES_CONTAINER.none)) {
+      _classifSelectAction.setEnabled(false);
+    }
+  }
+  
   /**
    * Prepare the viewer.
    */

@@ -39,8 +39,7 @@ import bzh.plealog.bioinfo.io.searchresult.txt.TxtExportSROutput;
 import bzh.plealog.blastviewer.resources.BVMessages;
 
 /**
- * This class implements the action to save an entire SROutput from
- * SummaryViewer.
+ * This class implements the action to prepare BCO viewer.
  * 
  * @author Patrick G. Durand
  */
@@ -107,16 +106,16 @@ public class PrepareBCOViewerAction extends AbstractAction {
           hsp = hit.getHsp(k);
           s = TxtExportSROutput.getFormattedData(
               annotatedHitsHashMap, iteration, hit, hsp, TxtExportSROutput.BIO_CLASSIF_TAX, false, false);
-          //System.out.println("   " + s);
+          System.out.println("   " + s);
           s = TxtExportSROutput.getFormattedData(
               annotatedHitsHashMap, iteration, hit, hsp, TxtExportSROutput.BIO_CLASSIF_GO, false, false);
-          //System.out.println("   " + s);
+          System.out.println("   " + s);
           s = TxtExportSROutput.getFormattedData(
               annotatedHitsHashMap, iteration, hit, hsp, TxtExportSROutput.BIO_CLASSIF_EC, false, false);
-          //System.out.println("   " + s);
+          System.out.println("   " + s);
           s = TxtExportSROutput.getFormattedData(
               annotatedHitsHashMap, iteration, hit, hsp, TxtExportSROutput.BIO_CLASSIF_IPR, false, false);
-          //System.out.println("   " + s);
+          System.out.println("   " + s);
           if (_firstHspOnly) {
             break;
           }
