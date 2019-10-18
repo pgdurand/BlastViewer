@@ -138,7 +138,7 @@ public class FetchFromNcbiAction extends AbstractAction {
             BlastViewerOpener.setHelperMessage(BVMessages
                 .getString("FetchFromNcbiAction.msg4"));
             SRLoader ncbiBlastLoader = SerializerSystemFactory
-                .getLoaderInstance(SerializerSystemFactory.NCBI_LOADER);
+                .getLoaderInstance(SerializerSystemFactory.NCBI_LOADER2);
             // load data from file
             SROutput so = ncbiBlastLoader.load(resFile);
             // display the viewer

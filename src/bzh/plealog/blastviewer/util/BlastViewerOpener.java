@@ -104,12 +104,19 @@ public class BlastViewerOpener {
     SROutput sro = null;
     
     SRLoader ncbiBlastLoader = SerializerSystemFactory
-      .getLoaderInstance(SerializerSystemFactory.NCBI_LOADER);
+      .getLoaderInstance(SerializerSystemFactory.NCBI_LOADER2);
     if (ncbiBlastLoader.canRead(f)){
       sro = ncbiBlastLoader.load(f);
       return sro;
     }
     
+    ncbiBlastLoader = SerializerSystemFactory
+        .getLoaderInstance(SerializerSystemFactory.NCBI_LOADER);
+    if (ncbiBlastLoader.canRead(f)){
+      sro = ncbiBlastLoader.load(f);
+      return sro;
+    }
+      
     SRLoader nativeBlastLoader = SerializerSystemFactory
         .getLoaderInstance(SerializerSystemFactory.NATIVE_LOADER);
     if (nativeBlastLoader.canRead(f)){

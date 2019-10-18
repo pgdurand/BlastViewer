@@ -35,11 +35,12 @@ public class QBlastRetriever {
   private File                      _resFile;
 
   public static final MessageFormat QBLAST_URL = new MessageFormat(
-      "https://blast.ncbi.nlm.nih.gov/Blast.cgi?RESULTS_FILE=on&RID={0}&FORMAT_TYPE=XML&FORMAT_OBJECT=Alignment&CMD=Get"
+      "https://blast.ncbi.nlm.nih.gov/Blast.cgi?RESULTS_FILE=on&RID={0}&FORMAT_TYPE=XML2_S&FORMAT_OBJECT=Alignment&CMD=Get"
       );
   // Note: old address was:
   // "https://www.ncbi.nlm.nih.gov/blast/Blast.cgi?RID={0}&FORMAT_TYPE=XML&CMD=Get&ALIGNMENT_TYPE=Pairwise&FORMAT_OBJECT=Alignment"
-  // To get XML 2, use: FORMAT_TYPE=XML2_S
+  // To get XML Legacy, use: FORMAT_TYPE=XML ; then update DetchFromNcbiAction to use NCBI_LOADER
+  // To get XML 2, use: FORMAT_TYPE=XML2_S ; then update DetchFromNcbiAction to use NCBI_LOADER2
   private static final String       QUERY_NAME = "QBlastRetriever";
 
   /**
