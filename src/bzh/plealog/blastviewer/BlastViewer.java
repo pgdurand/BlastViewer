@@ -18,7 +18,6 @@ package bzh.plealog.blastviewer;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.GridBagLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -69,6 +68,7 @@ import bzh.plealog.blastviewer.actions.hittable.SaveEntryAction;
 import bzh.plealog.blastviewer.actions.main.FetchFromNcbiAction;
 import bzh.plealog.blastviewer.actions.main.OpenFileAction;
 import bzh.plealog.blastviewer.actions.main.OpenSampleFileAction;
+import bzh.plealog.blastviewer.config.CmdLineManager;
 import bzh.plealog.blastviewer.config.FileExtension;
 import bzh.plealog.blastviewer.config.color.ColorPolicyConfigImplem;
 import bzh.plealog.blastviewer.config.directory.DirManager;
@@ -415,8 +415,8 @@ public class BlastViewer {
 
     @Override
     public void frameDisplayed() {
-      // TODO Auto-generated method stub
-      
+      String[] params = EZEnvironment.getApplicationArguments();
+      CmdLineManager.handleArguments(params);
     }
 
   }
