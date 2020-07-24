@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Properties;
 
@@ -27,14 +28,18 @@ import javax.swing.JComponent;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 
+import com.plealog.genericapp.api.EZApplicationBranding;
 import com.plealog.genericapp.api.EZEnvironment;
 import com.plealog.genericapp.api.file.EZFileUtils;
 import com.plealog.genericapp.api.log.EZLogger;
 
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.ui.blast.config.ConfigManager;
+import bzh.plealog.blastviewer.BlastViewer;
 import bzh.plealog.blastviewer.client.ncbi.NcbiFetcher;
 import bzh.plealog.blastviewer.config.directory.DirManager;
 import bzh.plealog.blastviewer.resources.BVMessages;
@@ -46,6 +51,11 @@ import bzh.plealog.blastviewer.util.HTTPEngineException;
  * Utility class to handle command-line arguments.
  */
 public class CmdLineManager {
+  //version
+  private static final String VER_ARG = "v";
+  //help message
+  private static final String HELP1_ARG = "help";
+  private static final String HELP2_ARG = "h";
   //NCBI Blast job RID
   private static final String NRID_ARG = "nrid";
   //URL of the Blast document to download
@@ -61,23 +71,121 @@ public class CmdLineManager {
   private static CommandLine  _cmdLinePlainTextLine = null;
   private static Properties   _propResFileIndex = null;
   private static int          _iQueryCounter = -1;
-
+  private static Properties   _versionProps = null;
+  
+  static {
+    Properties props = new Properties();
+    try (InputStream in = BlastViewer.class
+        .getResourceAsStream("version.properties");) {
+      props.load(in);
+      in.close();
+    } catch (Exception ex) {// should not happen; not bad anyway
+    }
+    _versionProps = props;
+  }
+  
   public CmdLineManager() {
+   
+  }
+
+  @SuppressWarnings("static-access")
+  private static Options getCmdLineOptions(){
+    Options options;
+
+    options = new Options();
+    
+    options.addOption(
+        OptionBuilder.withDescription(BVMessages.getString("CmdLineManager.arg.h"))
+        .create("h"));
+    options.addOption(
+        OptionBuilder.withDescription(BVMessages.getString("CmdLineManager.arg.h"))
+        .create("help"));
+    options.addOption(
+        OptionBuilder.withDescription(BVMessages.getString("CmdLineManager.arg.v"))
+        .create('v'));
+    options.addOption(
+        OptionBuilder.withDescription(BVMessages.getString("CmdLineManager.arg.nrid"))
+        .hasArg()
+        .withArgName("RID")
+        .create(NRID_ARG));    
+    options.addOption(
+        OptionBuilder.withDescription(BVMessages.getString("CmdLineManager.arg.url"))
+        .hasArg()
+        .withArgName("URL")
+        .create(URL_ARG));    
+    options.addOption(
+        OptionBuilder.withDescription(BVMessages.getString("CmdLineManager.arg.in"))
+        .hasArg()
+        .withArgName("FILE")
+        .create(FILE_ARG));    
+    return options;
+  }
+  /**
+   * Return the content of the version resource.
+   */
+  private static String getSoftUrl() {
+    return _versionProps==null? "" : _versionProps.getProperty("prg.url");
   }
 
   /**
-   * Setup the valid command-line of the application.
+   * Return the content of the version resource.
    */
-  private static Options getCmdLineOptions(){
-    Options opts;
-
-    opts = new Options();
-    opts.addOption(NRID_ARG, true, URL_ARG);
-    opts.addOption(URL_ARG, true, URL_ARG);
-    opts.addOption(FILE_ARG, true, FILE_ARG);
-    return opts;
+  private static String getSoftCopyright() {
+    return _versionProps==null? "" : _versionProps.getProperty("prg.copyright");
   }
 
+  /**
+   * Return the content of the version resource.
+   */
+  private static String getSoftLicense() {
+    return _versionProps==null? "" : _versionProps.getProperty("prg.license");
+  }
+  /**
+   * Checkout whether or not we have to show either help or version message.
+   * After message is dumped, application terminates.
+   */
+  public static void checkShowHelpOrVersionMessage(String[] args) {
+    Options   options;
+    GnuParser parser;
+    CommandLine cLine;
+    
+    options = getCmdLineOptions();
+    try {       
+      parser = new GnuParser();
+      options = getCmdLineOptions();
+      cLine = parser.parse( options, args);
+    }
+    catch( Exception e ) {//not bad: do nothin
+      return;
+    }
+    if (cLine.hasOption(VER_ARG)) {
+      String footer = MessageFormat.format(BVMessages.getString("CmdLineManager.arg.v.print"), 
+          new Object[]{EZApplicationBranding.getAppName(), EZApplicationBranding.getAppVersion()});
+      System.out.println(footer);
+      System.exit(0);
+    }
+    if(cLine.hasOption(HELP1_ARG) || cLine.hasOption(HELP2_ARG)) {
+      HelpFormatter formatter = new HelpFormatter();
+      
+      String usage= BVMessages.getString("CmdLineManager.arg.usage");
+      usage=MessageFormat.format(
+          usage, 
+          new Object[]{EZApplicationBranding.getAppVersion()});
+      String header = BVMessages.getString("CmdLineManager.arg.header");
+      String footer = BVMessages.getString("CmdLineManager.arg.footer");
+      footer=MessageFormat.format(
+          footer, 
+          new Object[]{
+              EZApplicationBranding.getAppName(), 
+              EZApplicationBranding.getAppVersion(), 
+              getSoftCopyright(),
+              getSoftUrl(),
+              getSoftLicense()});
+      formatter.printHelp(usage, header, options, footer, true);
+      System.exit(0);
+    }
+  }
+  
   /**
    * Analyze some command-line arguments.
    */
@@ -100,6 +208,7 @@ public class CmdLineManager {
       EZLogger.warn( BVMessages.getString("CmdLineManager.err1")+ e);
       return;
     }
+    
     boolean hasCmdlineObj = _cmdLinePlainTextLine.hasOption(NRID_ARG) ||
         _cmdLinePlainTextLine.hasOption(URL_ARG) ||
         _cmdLinePlainTextLine.hasOption(FILE_ARG);
@@ -109,6 +218,7 @@ public class CmdLineManager {
       return;
     }
 
+    
     if (_cmdLinePlainTextLine.hasOption(NRID_ARG)) {
       new NcbiOpenerThread(_cmdLinePlainTextLine.getOptionValues(NRID_ARG)).start();
     }

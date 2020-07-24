@@ -411,6 +411,8 @@ public class BlastViewer {
     public void preStart() {
       // This method is called by the framework at the very beginning of
       // application startup.
+      String[] params = EZEnvironment.getApplicationArguments();
+      CmdLineManager.checkShowHelpOrVersionMessage(params);
     }
 
     @Override
