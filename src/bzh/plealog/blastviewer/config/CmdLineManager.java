@@ -141,6 +141,7 @@ public class CmdLineManager {
   /**
    * Create a file to use to save loaded result data.
    */
+  @SuppressWarnings("unused")
   private static synchronized File getOutputFile(){
     String fName;
     File   file;
@@ -179,6 +180,9 @@ public class CmdLineManager {
   }
 
 
+  /**
+   * Handle NCBI BLAST jobs opening.
+   */
   private static class NcbiOpenerThread extends Thread{
     private String[] rids;
     public NcbiOpenerThread(String[] rids){
@@ -193,14 +197,15 @@ public class CmdLineManager {
     }
   }
   
+  /**
+   * Handle URL opening. 
+   */
   private static class UrlOpenerThread extends Thread{
     private String[] urls;
     public UrlOpenerThread(String[] urls){
       this.urls = urls;
     }
-    /**
-     * Open a URL pointing to a data file.
-     */
+
     private static void openURL(String url){
       File tmpFile;
       
@@ -239,6 +244,9 @@ public class CmdLineManager {
     }
   }
 
+  /**
+   * Handle file opening.
+   */
   private static class FileOpenerThread extends Thread{
     private String[] urls;
     public FileOpenerThread(String[] urls){
@@ -253,6 +261,13 @@ public class CmdLineManager {
 
       SROutput sro = BlastViewerOpener.readBlastFile(f);
 
+      if(sro==null) {
+        String msg = BVMessages.getString("OpenFileAction.err2");
+        msg = MessageFormat.format(msg, new Object[] {f.getAbsolutePath()});
+        EZEnvironment.displayWarnMessage(EZEnvironment.getParentFrame(), msg);
+        return;
+      }
+      
       BlastViewerOpener.setHelperMessage(BVMessages
           .getString("FetchFromNcbiAction.msg4"));
 
