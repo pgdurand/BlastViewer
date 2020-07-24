@@ -1,6 +1,6 @@
 # BlastViewer
 
-[![License](https://img.shields.io/badge/license-Affero%20GPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.txt) [![Build Status](https://travis-ci.org/pgdurand/BlastViewer.svg?branch=master)](https://travis-ci.org/pgdurand/BlastViewer) [![](https://tokei.rs/b1/github/pgdurand/BlastViewer?category=code)](https://github.com/pgdurand/BlastViewer) [![](https://img.shields.io/badge/platform-Java--1.8+-yellow.svg)](http://www.oracle.com/technetwork/java/javase/downloads/index.html) [![](https://img.shields.io/badge/run_on-Linux--macOS--Windows-yellowgreen.svg)]()
+[![License](https://img.shields.io/badge/license-Affero%20GPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.txt) [![Build Status](https://travis-ci.org/pgdurand/BlastViewer.svg?branch=master)](https://travis-ci.org/pgdurand/BlastViewer) [![](https://tokei.rs/b1/github/pgdurand/BlastViewer?category=code)](https://github.com/pgdurand/BlastViewer) [![](https://img.shields.io/badge/platform-Java--1.8-yellow.svg)](http://www.oracle.com/technetwork/java/javase/downloads/index.html) [![](https://img.shields.io/badge/run_on-Linux--macOS--Windows-yellowgreen.svg)]()
 
 ## Introduction
 
@@ -13,7 +13,7 @@ This is the BlastViewer Tool. It aims at displaying in a graphical way results f
 
 ## Requirements
 
-Use a [Java Virtual Machine](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 1.8 (or above) from Oracle. 
+Use a [Java Virtual Machine](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 1.8 from Oracle. Do not use JRE 1.9 or above: for now, the UI framework (jGAF) used by BlastViewer is not compatible with recent JREs... work is in progress to fix that!  
 
 *Not tested with any other JVM providers but Oracle... so there is no guarantee that the software will work as expected if not using Oracle's JVM.*
 
@@ -29,7 +29,7 @@ BlastViewer itself is released under the GNU Affero General Public License, Vers
 
 It depends on several thrid-party libraries as stated in the NOTICE.txt file provided with this project.
 
-## Once upon a time was: VisualBlast / KoriBlast
+## Once upon a time was: VisualBlast / KoriBlast / ngKLAST
 
 During Summer 2004 I was asking myself how easy it could be to rewrite in Java the original [VisualBlast software](http://www.ncbi.nlm.nih.gov/pubmed/9283755) written in C for the MS-Windows platform.
 
@@ -40,4 +40,4 @@ So, during my holidays on Summer 2004, I started a wonderful story: the creation
 Korilog ceased its activities on June 2015, therefore I decided to release these UI components to the open source community... just in time for Christmas 2016! ;-) 
 
 --
-(c) 2003-2019 - Patrick G. Durand
+(c) 2003-2020 - Patrick G. Durand
