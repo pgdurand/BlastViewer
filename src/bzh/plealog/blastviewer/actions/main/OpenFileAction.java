@@ -18,6 +18,7 @@ package bzh.plealog.blastviewer.actions.main;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.Enumeration;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -27,6 +28,7 @@ import com.plealog.genericapp.api.EZEnvironment;
 import com.plealog.genericapp.api.file.EZFileManager;
 import com.plealog.genericapp.api.log.EZLogger;
 
+import bzh.plealog.bioinfo.api.data.searchresult.SRIteration;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.blastviewer.resources.BVMessages;
 import bzh.plealog.blastviewer.util.BlastViewerOpener;
@@ -63,9 +65,9 @@ public class OpenFileAction extends AbstractAction {
 
   private class Loader extends Thread {
     private void doAction() {
-      File f = EZFileManager.chooseFileForOpenAction(BVMessages
+      File[] fs = EZFileManager.chooseFilesForOpenAction(BVMessages
           .getString("OpenFileAction.lbl"));
-      if (f == null)// user canceled dlg box
+      if (fs == null)// user canceled dlg box
         return;
 
       EZEnvironment.setWaitCursor();
@@ -73,14 +75,27 @@ public class OpenFileAction extends AbstractAction {
       BlastViewerOpener.setHelperMessage(BVMessages
           .getString("OpenFileAction.msg1"));
       
-      SROutput sro = BlastViewerOpener.readBlastFile(f);
+      SROutput sro, sroMaster=null;
+      
+      for (File f:fs) {
+        sro = BlastViewerOpener.readBlastFile(f);
+        if (sroMaster == null) {
+          sroMaster = sro;
+        }
+        else {
+          Enumeration<SRIteration> sriEnum = sro.enumerateIteration();
+          while(sriEnum.hasMoreElements()) {
+            sroMaster.addIteration(sriEnum.nextElement());
+          }
+        }
+      }
       
       BlastViewerOpener.setHelperMessage(BVMessages
           .getString("FetchFromNcbiAction.msg4"));
       
-      JComponent viewer = BlastViewerOpener.prepareViewer(sro);
+      JComponent viewer = BlastViewerOpener.prepareViewer(sroMaster);
       
-      BlastViewerOpener.displayInternalFrame(viewer, f.getName(), null);
+      BlastViewerOpener.displayInternalFrame(viewer, fs[0].getName(), null);
       System.gc();
     }
     public void run() {
