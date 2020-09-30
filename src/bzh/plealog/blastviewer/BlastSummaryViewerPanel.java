@@ -49,7 +49,7 @@ import javax.swing.event.ListSelectionListener;
 import com.plealog.genericapp.api.EZEnvironment;
 
 import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
-import bzh.plealog.bioinfo.api.data.searchjob.SRFileSummary;
+import bzh.plealog.bioinfo.api.data.searchjob.SJFileSummary;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput.FEATURES_CONTAINER;
 import bzh.plealog.bioinfo.api.data.searchresult.SRRequestInfo;
@@ -481,9 +481,9 @@ public class BlastSummaryViewerPanel extends JPanel {
     }
 
     public void run() {
-      Enumeration<SRFileSummary> summaries;
+      Enumeration<SJFileSummary> summaries;
       SummaryTableModel tModel;
-      SRFileSummary bfs;
+      SJFileSummary bfs;
       QueryBase query;
       Pattern pattern;
       Matcher matcher;

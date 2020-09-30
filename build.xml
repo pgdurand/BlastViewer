@@ -36,30 +36,62 @@
   <echo/>
   <echo>      compile: compile the code.</echo>
   <echo>  makedistrib: compile and make release JAR of the BLAST system.</echo>
+  <echo/>
+  <echo>  Ant version: ${ant.version}</echo>
+  <echo>  Java version: ${ant.java.version}</echo>
 </target>
 
 <!-- ============================================================= -->
 <target name="prepare">
-    <delete dir="${distrib}"/>
-    <mkdir  dir="${Dlib}"/>
-    <mkdir  dir="${Dsrc}"/>
-    <mkdir  dir="${Ddoc.api}"/>
+  <echo/>
+  <echo>  Ant version: ${ant.version}</echo>
+  <echo>  Java version: ${ant.java.version}</echo>
+  <echo/>
+  <delete dir="${distrib}"/>
+  <mkdir  dir="${Dlib}"/>
+  <mkdir  dir="${Dsrc}"/>
+  <mkdir  dir="${Ddoc.api}"/>
 </target>
+
+	<!-- ============================================================= -->
+<target name="is-java-eight">
+  <condition property="java.eight">
+  <equals arg1="${ant.java.version}" arg2="1.8"/>
+  </condition>
+</target>
+
+<target name="javac8" depends="is-java-eight" if="java.eight">
+  <javac srcdir="${Dsrc}"
+         destdir="${Dlib}"
+         classpathref="class.path"
+         debug="${compile.debug}"
+         optimize="${compile.optimize}"
+         >
+  </javac>
+</target>
+
+<!-- added for TravisCI -->
+<target name="javac9" depends="is-java-eight" unless="java.eight">
+  <javac srcdir="${Dsrc}"
+         destdir="${Dlib}"
+         classpathref="class.path"
+         debug="${compile.debug}"
+         optimize="${compile.optimize}"
+         >
+     <compilerarg line="--add-modules java.se.ee"/>
+  </javac>
+</target>
+
 
 <!-- ============================================================= -->
 <target name="compile" depends="prepare">
-   <copy todir="${Dsrc}">
-      <fileset dir="${src}">
-         <include name="bzh/plealog/blastviewer/**"/>
-      </fileset>
-    </copy>
-   <javac srcdir="${Dsrc}"
-          destdir="${Dlib}"
-	        classpathref="class.path"
-          debug="${compile.debug}"
-          optimize="${compile.optimize}"
-          >
-   </javac>
+  <copy todir="${Dsrc}">
+     <fileset dir="${src}">
+        <include name="bzh/plealog/blastviewer/**"/>
+     </fileset>
+   </copy>
+	<antcall target="javac8"/>
+	<antcall target="javac9"/>
   <copy todir="${Dlib}/bzh/plealog/blastviewer/">
     <fileset dir="${Dsrc}/bzh/plealog/blastviewer/">
       <include name="**/*properties"/>

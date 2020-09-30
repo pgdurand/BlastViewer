@@ -30,7 +30,7 @@ import com.plealog.genericapp.ui.common.CheckBoxChooserDialog;
 import com.plealog.genericapp.ui.common.CheckBoxModelItem;
 
 import bzh.plealog.bioinfo.api.data.feature.AnnotationDataModelConstants;
-import bzh.plealog.bioinfo.api.data.searchjob.SRTermSummary;
+import bzh.plealog.bioinfo.api.data.searchjob.SJTermSummary;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTable;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.blastviewer.resources.BVMessages;
@@ -99,7 +99,7 @@ public class ChooseClassificationAction extends AbstractAction {
         //GO special : handle sub-category (P, C, F)
         for (AnnotationDataModelConstants.ANNOTATION_GO_SUBCATEGORY subcat : 
           AnnotationDataModelConstants.ANNOTATION_GO_SUBCATEGORY.values()) {
-          code = SRTermSummary.formatViewType(
+          code = SJTermSummary.formatViewType(
               AnnotationDataModelConstants.ANNOTATION_CATEGORY.GO.getType(), 
               subcat.getType());
           item = new CheckBoxModelItem(code, cat.getDescription()+": "+subcat.getDescription(), currentClassifs.contains(code));
