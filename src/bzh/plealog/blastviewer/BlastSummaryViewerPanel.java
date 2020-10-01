@@ -70,6 +70,7 @@ import bzh.plealog.bioinfo.ui.util.TableSearcherComponentAction;
 import bzh.plealog.blastviewer.actions.summary.ChooseClassificationAction;
 import bzh.plealog.blastviewer.actions.summary.GlobalFilterAction;
 import bzh.plealog.blastviewer.actions.summary.GlobalSaveAction;
+import bzh.plealog.blastviewer.actions.summary.ImportIprScanDomainsAction;
 import bzh.plealog.blastviewer.actions.summary.OpenBasicViewerAction;
 import bzh.plealog.blastviewer.resources.BVMessages;
 import bzh.plealog.blastviewer.util.BlastViewerOpener;
@@ -99,6 +100,7 @@ public class BlastSummaryViewerPanel extends JPanel {
   private GlobalSaveAction _saveAction;
   private ChooseClassificationAction _classifSelectAction;
   private OpenBasicViewerAction _openBasicViewerAction;
+  private ImportIprScanDomainsAction _importIprScan;
   
   /**
    * Default constructor.
@@ -116,6 +118,7 @@ public class BlastSummaryViewerPanel extends JPanel {
     _filterAction.setResult(entry.getResult());
     _saveAction.setResult(entry.getResult());
     _classifSelectAction.setTable(_summaryTable);
+    _importIprScan.setTable(_summaryTable);
     _openBasicViewerAction.setTable(_summaryTable);
     
     //Prepare a View from the Model
@@ -366,6 +369,17 @@ public class BlastSummaryViewerPanel extends JPanel {
     
     tBar.addSeparator();
 
+    icon = EZEnvironment.getImageIcon("meta_path_24_24.png");
+    if (icon != null) {
+      _importIprScan = new ImportIprScanDomainsAction("", icon);
+    } else {
+      _importIprScan = new ImportIprScanDomainsAction(BVMessages.getString("BlastHitList.iprscan.btn"));
+    }
+    _importIprScan.setEnabled(true);
+    btn = tBar.add(_importIprScan);
+    btn.setToolTipText(BVMessages.getString("BlastHitList.iprscan.tip"));
+    btn.setText(BVMessages.getString("BlastHitList.iprscan.btn"));
+    
     icon = EZEnvironment.getImageIcon("meta_path_24_24.png");
     if (icon != null) {
       _classifSelectAction = new ChooseClassificationAction("", icon);
