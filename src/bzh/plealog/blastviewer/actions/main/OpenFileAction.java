@@ -72,13 +72,22 @@ public class OpenFileAction extends AbstractAction {
 
       EZEnvironment.setWaitCursor();
 
-      BlastViewerOpener.setHelperMessage(BVMessages
+      EZLogger.info(BVMessages
           .getString("OpenFileAction.msg1"));
-      
       SROutput sro, sroMaster=null;
-      
+      int notLoadedFiles=0, ncount=0;
       for (File f:fs) {
+        ncount++;
+        BlastViewerOpener.setHelperMessage(BVMessages
+            .getString("OpenFileAction.msg1")+ncount+"/"+fs.length);
         sro = BlastViewerOpener.readBlastFile(f);
+        if (sro==null) {
+          notLoadedFiles++;
+          EZLogger.warn(
+              BVMessages.getString("OpenFileAction.err") +
+              f.getAbsolutePath());
+          continue;
+        }
         if (sroMaster == null) {
           sroMaster = sro;
         }
@@ -89,21 +98,32 @@ public class OpenFileAction extends AbstractAction {
           }
         }
       }
+      if (sroMaster!=null) {
+        if(notLoadedFiles!=0) {
+          EZEnvironment.displayInfoMessage(EZEnvironment.getParentFrame(), 
+              BVMessages.getString("OpenFileAction.msg2") );
+        }
+        BlastViewerOpener.setHelperMessage(BVMessages
+            .getString("FetchFromNcbiAction.msg4"));
+        
+        JComponent viewer = BlastViewerOpener.prepareViewer(sroMaster);
+        
+        BlastViewerOpener.displayInternalFrame(viewer, fs[0].getName(), null);
+      }
+      else {
+        EZEnvironment.displayInfoMessage(EZEnvironment.getParentFrame(), 
+            BVMessages.getString("OpenFileAction.msg3") );
+      }
       
-      BlastViewerOpener.setHelperMessage(BVMessages
-          .getString("FetchFromNcbiAction.msg4"));
-      
-      JComponent viewer = BlastViewerOpener.prepareViewer(sroMaster);
-      
-      BlastViewerOpener.displayInternalFrame(viewer, fs[0].getName(), null);
       System.gc();
     }
     public void run() {
       try {
         doAction();
       } catch (Throwable t) {
-        EZLogger.warn(BVMessages.getString("OpenFileAction.err")
-            + t.toString());
+        EZLogger.warn(
+            BVMessages.getString("OpenFileAction.err") +
+            t.toString());
       } finally {
         BlastViewerOpener.cleanHelperMessage();
         EZEnvironment.setDefaultCursor();
