@@ -17,8 +17,7 @@
 package bzh.plealog.blastviewer.actions.summary;
 
 import java.awt.event.ActionEvent;
-import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -29,11 +28,11 @@ import com.plealog.genericapp.api.log.EZLogger;
 
 import bzh.plealog.bioinfo.api.data.feature.AnnotationDataModelConstants;
 import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
+import bzh.plealog.bioinfo.api.data.searchresult.SRClassification;
 import bzh.plealog.bioinfo.api.data.searchresult.SRHit;
 import bzh.plealog.bioinfo.api.data.searchresult.SRHsp;
 import bzh.plealog.bioinfo.api.data.searchresult.SRIteration;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
-import bzh.plealog.bioinfo.io.searchresult.csv.AnnotationDataModel;
 import bzh.plealog.bioinfo.io.searchresult.csv.ExtractAnnotation;
 import bzh.plealog.bioinfo.io.searchresult.txt.TxtExportSROutput;
 import bzh.plealog.blastviewer.resources.BVMessages;
@@ -80,14 +79,8 @@ public class PrepareBCOViewerAction extends AbstractAction {
   }
   
   public void processAnnotation(SROutput bo){
-    TreeMap<String, TreeMap<AnnotationDataModelConstants.ANNOTATION_CATEGORY, HashMap<String, AnnotationDataModel>>> annotatedHitsHashMap = null;
-    TreeMap<AnnotationDataModelConstants.ANNOTATION_CATEGORY, TreeMap<String, AnnotationDataModel>> annotationDictionary = null;
-
-    // Extract Bio Classification: IPR, EC, GO and TAX
-    annotatedHitsHashMap = new TreeMap<String, TreeMap<AnnotationDataModelConstants.ANNOTATION_CATEGORY, HashMap<String, AnnotationDataModel>>>();
-    annotationDictionary = new TreeMap<AnnotationDataModelConstants.ANNOTATION_CATEGORY, TreeMap<String, AnnotationDataModel>>();
-    ExtractAnnotation.buildAnnotatedHitDataSet(bo, 0, annotatedHitsHashMap, annotationDictionary);
-    
+    Map<AnnotationDataModelConstants.ANNOTATION_CATEGORY, SRClassification> ftClassif=null;
+    SRClassification classif = ExtractAnnotation.getClassificationdata(bo);    
     int i, j, k, size, size2, size3;
     SRIteration iteration;
     SRHit hit;
@@ -104,17 +97,20 @@ public class PrepareBCOViewerAction extends AbstractAction {
         size3 = hit.countHsp();
         for (k = 0; k < size3; k++) {// loop on hsp
           hsp = hit.getHsp(k);
+          ftClassif = ExtractAnnotation.prepareClassification(
+              classif, 
+              hsp.getFeatures());
           s = TxtExportSROutput.getFormattedData(
-              annotatedHitsHashMap, iteration, hit, hsp, TxtExportSROutput.BIO_CLASSIF_TAX, false, false);
+              ftClassif, iteration, hit, hsp, TxtExportSROutput.BIO_CLASSIF_TAX, false, false);
           System.out.println("   " + s);
           s = TxtExportSROutput.getFormattedData(
-              annotatedHitsHashMap, iteration, hit, hsp, TxtExportSROutput.BIO_CLASSIF_GO, false, false);
+              ftClassif, iteration, hit, hsp, TxtExportSROutput.BIO_CLASSIF_GO, false, false);
           System.out.println("   " + s);
           s = TxtExportSROutput.getFormattedData(
-              annotatedHitsHashMap, iteration, hit, hsp, TxtExportSROutput.BIO_CLASSIF_EC, false, false);
+              ftClassif, iteration, hit, hsp, TxtExportSROutput.BIO_CLASSIF_EC, false, false);
           System.out.println("   " + s);
           s = TxtExportSROutput.getFormattedData(
-              annotatedHitsHashMap, iteration, hit, hsp, TxtExportSROutput.BIO_CLASSIF_IPR, false, false);
+              ftClassif, iteration, hit, hsp, TxtExportSROutput.BIO_CLASSIF_IPR, false, false);
           System.out.println("   " + s);
           if (_firstHspOnly) {
             break;
@@ -127,10 +123,8 @@ public class PrepareBCOViewerAction extends AbstractAction {
     }
     
     //do some cleaning
-    if (annotatedHitsHashMap != null)
-      annotatedHitsHashMap.clear();
-    if (annotationDictionary != null)
-      annotationDictionary.clear();
+    if (ftClassif != null)
+      ftClassif.clear();
   }
 
   private void doAction() {
