@@ -65,6 +65,7 @@ public class OpenFileAction extends AbstractAction {
 
   private class Loader extends Thread {
     private void doAction() {
+      //EZFileManager.useOSNativeFileDialog(true);
       File[] fs = EZFileManager.chooseFilesForOpenAction(BVMessages
           .getString("OpenFileAction.lbl"));
       if (fs == null)// user canceled dlg box
