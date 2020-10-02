@@ -369,7 +369,7 @@ public class BlastSummaryViewerPanel extends JPanel {
     
     tBar.addSeparator();
 
-    icon = EZEnvironment.getImageIcon("meta_path_24_24.png");
+    icon = EZEnvironment.getImageIcon("import_bco_24_24.png");
     if (icon != null) {
       _importIprScan = new ImportIprScanDomainsAction("", icon);
     } else {
