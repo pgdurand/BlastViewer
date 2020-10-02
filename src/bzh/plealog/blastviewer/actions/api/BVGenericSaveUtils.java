@@ -114,7 +114,9 @@ public class BVGenericSaveUtils {
       
       switch(fExt){
       case "csv":
-        List<Integer> columns = Arrays.asList(new Integer[] {
+        //Use ArrayList specifically to avoid UnsuportedOperationException when
+        //trying to update List with additional List of Integers (see below)
+        ArrayList<Integer> columns = new ArrayList<>(Arrays.asList(new Integer[] {
             //note: query ID and description are always the two first columns
             TxtExportSROutput.ACCESSION, 
             TxtExportSROutput.DEFINITION, 
@@ -139,7 +141,7 @@ public class BVGenericSaveUtils {
             TxtExportSROutput.H_GAP, 
             TxtExportSROutput.H_FRAME,
             TxtExportSROutput.H_COVERAGE
-        });
+        }));
         if (sro_to_save.getClassification()!=null) {
           columns.addAll(Arrays.asList(new Integer[] {TxtExportSROutput.TAXONOMY,
               TxtExportSROutput.BIO_CLASSIF, 
