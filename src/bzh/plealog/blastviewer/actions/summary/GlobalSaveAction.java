@@ -17,19 +17,15 @@
 package bzh.plealog.blastviewer.actions.summary;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 
-import com.plealog.genericapp.api.EZEnvironment;
-import com.plealog.genericapp.api.file.EZFileManager;
 import com.plealog.genericapp.api.log.EZLogger;
 
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
-import bzh.plealog.bioinfo.api.data.searchresult.io.SRWriter;
-import bzh.plealog.bioinfo.io.searchresult.SerializerSystemFactory;
+import bzh.plealog.blastviewer.actions.api.BVGenericSaveUtils;
 import bzh.plealog.blastviewer.resources.BVMessages;
 
 /**
@@ -78,15 +74,8 @@ public class GlobalSaveAction extends AbstractAction {
 
     _running = true;
     
-    // get a filter from user
-    File file = EZFileManager.chooseFileForSaveAction(BVMessages.getString("SaveFileAction.lbl"));
-    
-    // dialog cancelled ?
-    if (file == null)
-      return;
-
-    SRWriter writer = SerializerSystemFactory.getWriterInstance(SerializerSystemFactory.NCBI_WRITER);
-    writer.write(file, _sro);
+    BVGenericSaveUtils bsu = new BVGenericSaveUtils(_sro, true, true);
+    bsu.saveResult();
   }
 
   public void actionPerformed(ActionEvent event) {
@@ -100,7 +89,6 @@ public class GlobalSaveAction extends AbstractAction {
               + t.toString());
         } finally {
           _running = false;
-          EZEnvironment.setDefaultCursor();
         }
       }
     });
