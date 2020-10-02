@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2016 Patrick G. Durand
+/* Copyright (C) 2003-2020 Patrick G. Durand
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -94,7 +94,7 @@ public class SaveEntryAction extends BVActionImplem {
       switch(fExt){
       case "csv":
         List<Integer> columns = Arrays.asList(new Integer[] {
-            //note: query ID nad description are always the two first columns
+            //note: query ID and description are always the two first columns
             TxtExportSROutput.HIT_NUM,
             TxtExportSROutput.ACCESSION, 
             TxtExportSROutput.DEFINITION, 
