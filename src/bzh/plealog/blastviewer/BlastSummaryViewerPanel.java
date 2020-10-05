@@ -115,8 +115,8 @@ public class BlastSummaryViewerPanel extends JPanel {
    */
   public void setContent(BlastEntry entry) {
     _entry = entry;
-    _filterAction.setResult(entry.getResult());
-    _saveAction.setResult(entry.getResult());
+    _filterAction.setTable(_summaryTable);
+    _saveAction.setTable(_summaryTable);
     _classifSelectAction.setTable(_summaryTable);
     _importIprScan.setTable(_summaryTable);
     _openBasicViewerAction.setTable(_summaryTable);

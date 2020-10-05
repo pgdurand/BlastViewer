@@ -27,6 +27,8 @@ import com.plealog.genericapp.api.log.EZLogger;
 
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.api.filter.BFilter;
+import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTable;
+import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.blastviewer.actions.hittable.ActionUtils;
 import bzh.plealog.blastviewer.resources.BVMessages;
 import bzh.plealog.blastviewer.util.BlastViewerOpener;
@@ -39,7 +41,7 @@ import bzh.plealog.blastviewer.util.BlastViewerOpener;
  */
 public class GlobalFilterAction extends AbstractAction {
   private static final long serialVersionUID = -3984245135396746453L;
-  private SROutput _sro;
+  private SummaryTable _table;
   private boolean _running = false;
   
   /**
@@ -65,14 +67,14 @@ public class GlobalFilterAction extends AbstractAction {
   }
 
   /**
-   * Set data to filter.
+   * Set data object.
    */
-  public void setResult(SROutput sro) {
-    _sro = sro;
+  public void setTable(SummaryTable table) {
+    _table = table;
   }
   
   private void doAction() {
-    if (_running || _sro==null || _sro.isEmpty())
+    if (_running)
       return;
 
     _running = true;
@@ -88,7 +90,9 @@ public class GlobalFilterAction extends AbstractAction {
         filter.getTxtString()));
 
     //apply the filter
-    SROutput sro2 = filter.execute(_sro);
+    //get complete SROutput from view (rows may have been filtered)
+    SummaryTableModel model = (SummaryTableModel) _table.getModel();
+    SROutput sro2 = filter.execute(model.getResultFromView());
 
     // any results?
     if (sro2 == null || sro2.isEmpty()) {

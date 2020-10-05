@@ -111,7 +111,15 @@ public class BVGenericSaveUtils {
       else
         sro_to_save = _sro;
       SRWriter writer;
-      
+      //queries annotated with BCO is a particular feature, so handle that case
+      int i, size = sro_to_save.countIteration();
+      boolean hasQueryAnnotation = false;
+      for (i = 0; i < size; i++) {// loop on iterations
+        if (sro_to_save.getIteration(i).getIterationQueryFeatureTable()!=null){
+          hasQueryAnnotation=true;
+          break;
+        }
+      }
       switch(fExt){
       case "csv":
         //Use ArrayList specifically to avoid UnsuportedOperationException when
@@ -120,6 +128,7 @@ public class BVGenericSaveUtils {
             //note: query ID and description are always the two first columns
             TxtExportSROutput.ACCESSION, 
             TxtExportSROutput.DEFINITION, 
+            TxtExportSROutput.ORGANISM, 
             TxtExportSROutput.LENGTH, 
             TxtExportSROutput.NBHSPS, 
             TxtExportSROutput.SCORE, 
@@ -143,17 +152,28 @@ public class BVGenericSaveUtils {
             TxtExportSROutput.H_COVERAGE
         }));
         if (sro_to_save.getClassification()!=null) {
-          columns.addAll(Arrays.asList(new Integer[] {TxtExportSROutput.TAXONOMY,
-              TxtExportSROutput.BIO_CLASSIF, 
+          if (hasQueryAnnotation) {
+            columns.addAll( 
+                0,
+                Arrays.asList(new Integer[] {
+                TxtExportSROutput.QUERY_BIO_CLASSIF_GO,
+                TxtExportSROutput.QUERY_BIO_CLASSIF_IPR, 
+                TxtExportSROutput.QUERY_BIO_CLASSIF_EC,
+                TxtExportSROutput.QUERY_BIO_CLASSIF_PFM
+            }));
+          }
+          columns.addAll(Arrays.asList(new Integer[] {
+              TxtExportSROutput.TAXONOMY,
               TxtExportSROutput.BIO_CLASSIF_TAX, 
               TxtExportSROutput.BIO_CLASSIF_GO,
               TxtExportSROutput.BIO_CLASSIF_IPR, 
-              TxtExportSROutput.BIO_CLASSIF_EC
+              TxtExportSROutput.BIO_CLASSIF_EC,
+              TxtExportSROutput.BIO_CLASSIF_PFM
           }));
         }
         try(FileWriter fw = new FileWriter(file)){
           int[] coldIds = new int[columns.size()];
-          int i=0;
+          i=0;
           for(Integer cid:columns) {
             coldIds[i]=cid; i++;
           }

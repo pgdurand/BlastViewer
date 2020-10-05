@@ -24,7 +24,8 @@ import javax.swing.SwingUtilities;
 
 import com.plealog.genericapp.api.log.EZLogger;
 
-import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
+import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTable;
+import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.blastviewer.actions.api.BVGenericSaveUtils;
 import bzh.plealog.blastviewer.resources.BVMessages;
 
@@ -36,7 +37,7 @@ import bzh.plealog.blastviewer.resources.BVMessages;
  */
 public class GlobalSaveAction extends AbstractAction {
   private static final long serialVersionUID = -3984245135396746453L;
-  private SROutput _sro;
+  private SummaryTable _table;
   private boolean _running = false;
   
   /**
@@ -62,19 +63,21 @@ public class GlobalSaveAction extends AbstractAction {
   }
 
   /**
-   * Set data to save.
+   * Set data object.
    */
-  public void setResult(SROutput sro) {
-    _sro = sro;
+  public void setTable(SummaryTable table) {
+    _table = table;
   }
   
   private void doAction() {
-    if (_running || _sro==null || _sro.isEmpty())
+    if (_running)
       return;
 
     _running = true;
     
-    BVGenericSaveUtils bsu = new BVGenericSaveUtils(_sro, true, true);
+    //get complete SROutput from view (rows may have been filtered)
+    SummaryTableModel model = (SummaryTableModel) _table.getModel();
+    BVGenericSaveUtils bsu = new BVGenericSaveUtils(model.getResultFromView(), true, true);
     bsu.saveResult();
   }
 
