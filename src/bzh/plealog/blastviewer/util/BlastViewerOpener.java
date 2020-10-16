@@ -32,7 +32,7 @@ import com.plealog.genericapp.ui.desktop.GInternalFrame;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.api.data.searchresult.io.SRLoader;
 import bzh.plealog.bioinfo.io.searchresult.SerializerSystemFactory;
-import bzh.plealog.blastviewer.BlastSummaryViewerPanel;
+import bzh.plealog.blastviewer.BlastQueryViewer;
 import bzh.plealog.blastviewer.BlastViewerPanel;
 
 /**
@@ -141,7 +141,7 @@ public class BlastViewerOpener {
       return viewer;
     }
     else {
-      BlastSummaryViewerPanel viewer = new BlastSummaryViewerPanel();
+      BlastQueryViewer viewer = new BlastQueryViewer();
       viewer.setContent(data);
       return viewer;
     }

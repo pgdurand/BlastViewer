@@ -24,7 +24,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,9 +51,6 @@ import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
 import bzh.plealog.bioinfo.api.data.searchjob.SJFileSummary;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput.FEATURES_CONTAINER;
-import bzh.plealog.bioinfo.api.data.searchresult.SRRequestInfo;
-import bzh.plealog.bioinfo.data.searchjob.InMemoryQuery;
-import bzh.plealog.bioinfo.data.searchresult.SRUtils;
 import bzh.plealog.bioinfo.ui.blast.config.ConfigManager;
 import bzh.plealog.bioinfo.ui.blast.core.BlastEntry;
 import bzh.plealog.bioinfo.ui.blast.core.BlastIteration;
@@ -77,10 +73,6 @@ import bzh.plealog.blastviewer.util.BlastViewerOpener;
 
 /**
  * This is the BlastViewer Main Module used to display the summary of a multi-query BLAST results.
- * 
- * It wraps within a single component the various
- * elements required to displayed Blast data: a BlastNavigator, a Blast Hit Table,
- * the pairwise sequence alignment viewer, etc.
  * 
  * @author Patrick G. Durand
  */
@@ -105,15 +97,18 @@ public class BlastSummaryViewerPanel extends JPanel {
   /**
    * Default constructor.
    */
-  public BlastSummaryViewerPanel() {
+  public BlastSummaryViewerPanel(BlastSummaryViewerController bvController) {
     super();
     createGUI();
   }
 
+  public String getTitle() {
+    return BVMessages.getString("BlastSummaryViewerPanel.title");
+  }
   /**
    * Set the data to display in this viewer.
    */
-  public void setContent(BlastEntry entry) {
+  public void setContent(QueryBase query, BlastEntry entry) {
     _entry = entry;
     _filterAction.setTable(_summaryTable);
     _saveAction.setTable(_summaryTable);
@@ -121,22 +116,6 @@ public class BlastSummaryViewerPanel extends JPanel {
     _importIprScan.setTable(_summaryTable);
     _openBasicViewerAction.setTable(_summaryTable);
     
-    //Prepare a View from the Model
-    InMemoryQuery query;
-    query = new InMemoryQuery();
-    List<SROutput> results = SRUtils.splitMultiResult(entry.getResult());
-    for(SROutput sro : results) {
-      query.addResult(sro);
-    }
-    query.setDatabankName(entry.getDbName());
-    query.setEngineSysName(entry.getBlastClientName());
-    query.setJobName(entry.getName());
-    // a Blast result loaded from a file is always OK
-    query.setStatus(QueryBase.OK);
-    // query not provided in blastFile
-    query.setQueyPath("n/a");
-    // not appropriate here
-    query.setRID("n/a");
     QueryBaseUI qBaseUI;
     qBaseUI = new QueryBaseUI(query);
     SummaryTableModel resultTableModel = new SummaryTableModel();
@@ -145,6 +124,8 @@ public class BlastSummaryViewerPanel extends JPanel {
     _summaryTable.setModel(resultTableModel);
     //_summaryTable.setRowSelectionInterval(0, 0);
     updateViewTypeRows();
+    
+    updateActions(entry.getResult());
   }
 
   /**
@@ -190,22 +171,6 @@ public class BlastSummaryViewerPanel extends JPanel {
   }
 
   /**
-   * Set the data to display in this viewer.
-   */
-  public void setContent(SROutput so, String soPath) {
-    setContent(prepareEntry(so, soPath));
-    updateActions(so);
-  }
-
-  /**
-   * Set the data to display in this viewer.
-   */
-  public void setContent(SROutput so) {
-    setContent(prepareEntry(so, null));
-    updateActions(so);
-  }
-
-  /**
    * Return the result currently selected in this ViewerPanel.
    */
   public SROutput getSelectedResult() {
@@ -216,37 +181,6 @@ public class BlastSummaryViewerPanel extends JPanel {
     else {
       return (SROutput) _summaryTable.getValueAt(row, SummaryTableModel.RESULT_DATA_COL);
     }
-  }
-
-  /**
-   * Wraps a SROutput object into a BlastEntry.
-   */
-  private BlastEntry prepareEntry(SROutput bo, String soPath) {
-    String val;
-    int pos;
-
-    // analyze SROutput object (i.e. a Blast result) to get:
-    // program name, query name and databank name
-    SRRequestInfo bri = bo.getRequestInfo();
-    Object obj = bri.getValue(SRRequestInfo.PRGM_VERSION_DESCRIPTOR_KEY);
-    if (obj != null) {
-      val = obj.toString();
-      if ((pos = val.indexOf('[')) > 0) {
-        val = val.substring(0, pos - 1);
-      } else {
-        val = obj.toString();
-      }
-    } else {
-      val = null;
-    }
-    String program = val != null ? val : "?";
-    obj = bri.getValue(SRRequestInfo.DATABASE_DESCRIPTOR_KEY);
-    String dbname = obj != null ? obj.toString() : "?";
-    obj = bri.getValue(SRRequestInfo.QUERY_DEF_DESCRIPTOR_KEY);
-    String queryName = obj != null ? obj.toString() : "?";
-
-    
-    return new BlastEntry(program, queryName, soPath, bo, null, dbname, false);
   }
 
   /**
@@ -263,6 +197,7 @@ public class BlastSummaryViewerPanel extends JPanel {
    */
   private void createGUI() {
     _hitListPane = ConfigManager.getHitTableFactory().createViewer();
+    
     JComponent cmp = prepareSummaryTable();
     
     _resultStatusTxt = new JLabel();
@@ -305,6 +240,7 @@ public class BlastSummaryViewerPanel extends JPanel {
     summaryPanel.add(_resultStatusTxt, BorderLayout.NORTH);
     summaryPanel.add(cmp, BorderLayout.CENTER);
     summaryPanel.add(navPanel, BorderLayout.SOUTH);
+    
     
     JSplitPane jsp = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
     jsp.setTopComponent(summaryPanel);
@@ -588,13 +524,8 @@ public class BlastSummaryViewerPanel extends JPanel {
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-      //BlastQuery query;
-
       if (searchText == null)
         return;
-      //query = (BlastQuery) _resultTable.getValueAt(0, ResultTableModel.QUERY_DATA_COL);
-      //if (query == null)
-      //  return;
       _hitListPane.resetDataModel();
       SwingUtilities.invokeLater(new MainSelectThread(searchText, caller));
     }

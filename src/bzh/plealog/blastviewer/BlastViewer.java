@@ -39,6 +39,8 @@ import javax.swing.SwingConstants;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import com.plealog.genericapp.api.EZApplicationBranding;
 import com.plealog.genericapp.api.EZEnvironment;
@@ -130,6 +132,9 @@ public class BlastViewer {
     // some third party libraries rely on log4j (e.g. Castor XML framework)
     BasicConfigurator.configure();
 
+    //switch off debug messages from Castor framework
+    Logger.getLogger("org.exolab.castor").setLevel(Level.WARN);
+    
     // Required to use Plealog Bioinformatics Core objects such as Features,
     // FeatureTables, Sequences
     CoreSystemConfigurator.initializeSystem();
