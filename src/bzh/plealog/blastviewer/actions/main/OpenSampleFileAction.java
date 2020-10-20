@@ -25,8 +25,8 @@ import java.io.InputStream;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
-import javax.swing.SwingUtilities;
 
+import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.ui.blast.config.ConfigManager;
 import bzh.plealog.blastviewer.config.directory.DirManager;
 import bzh.plealog.blastviewer.resources.BVMessages;
@@ -67,7 +67,7 @@ public class OpenSampleFileAction extends AbstractAction {
     super(name, icon);
   }
 
-
+  private class Loader extends Thread {
   private void doAction() {
     String sampleBlastFile = null;
     
@@ -80,6 +80,10 @@ public class OpenSampleFileAction extends AbstractAction {
       EZLogger.warn(e.toString());
       return;
     }
+    
+    EZEnvironment.setWaitCursor();
+    BlastViewerOpener.setHelperMessage(BVMessages
+            .getString("OpenFileAction.msg1"));
     
     File f = new File(sampleBlastFile);
     
@@ -102,28 +106,32 @@ public class OpenSampleFileAction extends AbstractAction {
           return;
         }
       }
-
-    EZEnvironment.setWaitCursor();
-
+    
+    SROutput sro = BlastViewerOpener.readBlastFile(f);
+    
+    BlastViewerOpener.setHelperMessage(BVMessages
+            .getString("FetchFromNcbiAction.msg4"));
+    
     BlastViewerOpener.displayInternalFrame(
-        BlastViewerOpener.prepareViewer(BlastViewerOpener.readBlastFile(f)),
+        BlastViewerOpener.prepareViewer(sro),
         f.getName(), null);
   }
-
-  public void actionPerformed(ActionEvent event) {
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        try {
+  public void run() {
+	  try {
           doAction();
         } catch (Throwable t) {
           EZLogger.warn(BVMessages.getString("OpenFileAction.err")
               + t.toString());
         } finally {
           EZEnvironment.setDefaultCursor();
+          BlastViewerOpener.cleanHelperMessage();
         }
       }
-    });
+  }
+
+  
+  public void actionPerformed(ActionEvent event) {
+	  new Loader().start();
   }
 
 }
