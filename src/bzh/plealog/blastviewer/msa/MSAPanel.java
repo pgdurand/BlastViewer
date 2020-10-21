@@ -47,6 +47,14 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.FormLayout;
+import com.plealog.genericapp.api.EZEnvironment;
+import com.plealog.genericapp.api.log.EZLogger;
+import com.plealog.genericapp.ui.common.ContextMenuElement;
+import com.plealog.genericapp.ui.common.ContextMenuManager;
+import com.plealog.genericapp.ui.common.ImageManagerAction;
+
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.api.data.searchresult.SRRequestInfo;
 import bzh.plealog.bioinfo.api.data.sequence.DAlphabet;
@@ -64,19 +72,12 @@ import bzh.plealog.bioinfo.ui.logo.LogoCellRenderer;
 import bzh.plealog.bioinfo.ui.logo.LogoPanel;
 import bzh.plealog.bioinfo.ui.sequence.basic.DRulerViewer;
 import bzh.plealog.bioinfo.ui.util.BasicSelectTableAction;
+import bzh.plealog.bioinfo.ui.util.Selection;
 import bzh.plealog.blastviewer.msa.actions.CopySelectionToClipBoardAction;
 import bzh.plealog.blastviewer.msa.actions.ExportMSAAction;
 import bzh.plealog.blastviewer.msa.consensus.ConsensusCellRenderer;
 import bzh.plealog.blastviewer.msa.consensus.ConsensusSlider;
 import bzh.plealog.blastviewer.resources.BVMessages;
-
-import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.layout.FormLayout;
-import com.plealog.genericapp.api.EZEnvironment;
-import com.plealog.genericapp.api.log.EZLogger;
-import com.plealog.genericapp.ui.common.ContextMenuElement;
-import com.plealog.genericapp.ui.common.ContextMenuManager;
-import com.plealog.genericapp.ui.common.ImageManagerAction;
 
 /**
  * This class is responsible for displaying the graphical multiple sequence
@@ -590,7 +591,7 @@ public class MSAPanel extends JPanel implements BlastIterationListListener,
     actions = new ArrayList<ContextMenuElement>();
 
     act2 = new BasicSelectTableAction("Clear selection",
-        BasicSelectTableAction.SelectType.CLEAR);
+        Selection.SelectType.CLEAR);
     act2.setTable(_msaTable);
     actions.add(new ContextMenuElement(act2));
     actions.add(null);
