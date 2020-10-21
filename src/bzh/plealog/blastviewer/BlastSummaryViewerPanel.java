@@ -59,6 +59,7 @@ import bzh.plealog.bioinfo.ui.blast.hittable.BlastHitTable;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTable;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.bioinfo.ui.util.ProgressTinyDialog;
+import bzh.plealog.bioinfo.ui.util.Selection;
 import bzh.plealog.bioinfo.ui.util.TableColumnManager;
 import bzh.plealog.bioinfo.ui.util.TableSearcherComponent;
 import bzh.plealog.bioinfo.ui.util.TableSearcherComponentAPI;
@@ -170,6 +171,28 @@ public class BlastSummaryViewerPanel extends JPanel {
     return pnl;
   }
 
+  /**
+   * Show list of hits given a selection type.
+   * 
+   * @param selType type of selection event
+   */
+  public void showSummary(Selection.SelectType selType) {
+    switch(selType) {
+    case ALL:
+      _rbAllQueries.setSelected(true);
+      break;
+    case WITHOUT_HITS:
+      _rbNoMatchQueries.setSelected(true);
+      break;
+    case WITH_HITS:
+      _rbMatchQueries.doClick();
+      break;
+    default:
+      break;
+    }
+    _summaryTable.updateRowHeights();
+  }
+  
   /**
    * Return the result currently selected in this ViewerPanel.
    */
