@@ -67,6 +67,7 @@ import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
 import bzh.plealog.bioinfo.api.data.searchjob.SJFileSummary;
 import bzh.plealog.bioinfo.api.data.searchjob.SJTermSummary;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
+import bzh.plealog.bioinfo.ui.util.Selection;
 import bzh.plealog.blastviewer.BlastSummaryViewerController;
 import bzh.plealog.blastviewer.resources.BVMessages;
 
@@ -222,9 +223,9 @@ public class QueryOverviewPanel extends JPanel {
 	      if (entity instanceof PieSectionEntity) {
 	        String sectionClicked = ((PieSectionEntity) entity).getSectionKey().toString();
 	        if (sectionClicked.equals(PIECHART_SECTION_MATCH)) {
-	          //getProjectManagerPanel().showBestHitTable(SelectType.WITH_HITS);
+	          _bvController.showSummary(Selection.SelectType.WITH_HITS);
 	        } else if (sectionClicked.equals(PIECHART_SECTION_NO_MATCH)) {
-	          //getProjectManagerPanel().showBestHitTable(SelectType.WITHOUT_HITS);
+            _bvController.showSummary(Selection.SelectType.WITHOUT_HITS);
 	        }
 	      }
 	    }

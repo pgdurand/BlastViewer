@@ -18,6 +18,7 @@ package bzh.plealog.blastviewer;
 
 import javax.swing.JTabbedPane;
 
+import bzh.plealog.bioinfo.ui.util.Selection;
 import bzh.plealog.blastviewer.summary.QueryOverviewPanel;
 import bzh.plealog.blastviewer.summary.SRCOverviewPanel;
 
@@ -83,4 +84,8 @@ public class BlastSummaryViewerController {
     _mainTab.setSelectedComponent(_bcoOverview);
   }
   
+  public void showSummary(Selection.SelectType selType) {
+    _summary.showSummary(selType);
+    _mainTab.setSelectedComponent(_summary);
+  }
 }
