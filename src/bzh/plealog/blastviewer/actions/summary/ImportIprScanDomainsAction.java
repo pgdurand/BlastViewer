@@ -18,18 +18,21 @@ package bzh.plealog.blastviewer.actions.summary;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
+import javax.swing.JComponent;
 
 import com.plealog.genericapp.api.EZEnvironment;
 import com.plealog.genericapp.api.file.EZFileManager;
 import com.plealog.genericapp.api.log.EZLogger;
 
 import bzh.plealog.bioinfo.api.data.searchjob.SJFileSummary;
+import bzh.plealog.bioinfo.api.data.searchresult.SRIteration;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.io.gff.iprscan.IprGffObject;
 import bzh.plealog.bioinfo.io.gff.iprscan.IprGffReader;
@@ -50,6 +53,8 @@ public class ImportIprScanDomainsAction extends AbstractAction {
   private SummaryTable _table;
   private boolean _running = false;
 
+  private boolean importInNewView = false;
+  
   /**
    * Action constructor.
    * 
@@ -78,18 +83,29 @@ public class ImportIprScanDomainsAction extends AbstractAction {
   public void setTable(SummaryTable table) {
     _table = table;
   }
+  
+  /**
+   * Use a thread to avoid UI lock.
+   */
   private class Loader extends Thread {
-    private void doAction() {
-      if (_running)
-        return;
-  
-      _running = true;
-  
-      //Collect GFF3 files...
-      File[] fs = EZFileManager.chooseFilesForOpenAction(BVMessages
+    /**
+     * Ask user for Iprscan GFF3 file(s).
+     * 
+     * @return array of files or null if user canceled dialog box
+     */
+    private File[] chooseFile() {
+      return EZFileManager.chooseFilesForOpenAction(BVMessages
           .getString("ImportIprScanFileAction.lbl"));
-      if (fs == null)// user canceled dlg box
-        return;
+    }
+    /**
+     * Load Iprscan data files.
+     * 
+     * @param fs array of files
+     * 
+     * @return Iprscan data or null if files do not contain any appropriate data
+     * */
+    private Map<String, List<IprGffObject>> loadIprData(File[] fs) {
+      //Collect GFF3 files...
   
       EZLogger.info(String.format(BVMessages.getString("ImportIprScanFileAction.log3"), 
           fs.length));
@@ -112,20 +128,26 @@ public class ImportIprScanDomainsAction extends AbstractAction {
             fs.length==1 ?
                 BVMessages.getString("ImportIprScanFileAction.msg1") : 
                   BVMessages.getString("ImportIprScanFileAction.msg1b") );
-        return;
+        return null;
       }
       
       EZLogger.info(String.format(BVMessages.getString("ImportIprScanFileAction.log1"), 
           fs.length, allGffMap.size()));
       
-      EZEnvironment.setWaitCursor();
-      
-      //Solution 1: update current view
+      return allGffMap;
+    }
+    /**
+     * Import IPRscan domain predictions in current view.
+     * 
+     * @param allGffMap IPRscan data
+     * */
+    private void importIprInCurrentView(Map<String, List<IprGffObject>> allGffMap) {
+      int ncount=0;
       SummaryTableModel model = (SummaryTableModel) _table.getModel();
       SROutput sro;
       int nannot, nSeqAnnotated=0, rows=model.getRowCount();
       ncount=0;
-      msg = BVMessages.getString("ImportIprScanFileAction.msg4");
+      String msg = BVMessages.getString("ImportIprScanFileAction.msg4");
       for(int i=0; i< rows; i++) {
         ncount++;
         BlastViewerOpener.setHelperMessage(String.format(msg, ncount, rows));
@@ -148,9 +170,15 @@ public class ImportIprScanDomainsAction extends AbstractAction {
         return;
       }
       _table.updateRowHeights();
-      
-      //Solution 2: open a new viewer
-      /*
+    }
+    
+    /**
+     * Import IPRscan domain predictions in a new view.
+     * 
+     * @param allGffMap IPRscan data
+     * @param viewName name of niew view
+     * */
+    private void importIprInNewView(Map<String, List<IprGffObject>> allGffMap, String viewName) {
       SummaryTableModel model = (SummaryTableModel) _table.getModel();
       SROutput sro, sroMaster=null;
       int nannot, nSeqAnnotated=0;
@@ -184,9 +212,43 @@ public class ImportIprScanDomainsAction extends AbstractAction {
         return;
       }
       JComponent viewer = BlastViewerOpener.prepareViewer(sroMaster);
-      BlastViewerOpener.displayInternalFrame(viewer, fs[0].getName(), null);
-      */
+      BlastViewerOpener.displayInternalFrame(viewer, viewName, null);
     }
+
+    /**
+     * Run data import job.
+     * */
+    private void doAction() {
+      if (_running)
+        return;
+      
+      _running = true;
+
+      //choose files with IPRscan data (gff3)
+      File[] fs = chooseFile();
+      if (fs==null) {//user has canceled dialog box
+        return;
+      }
+      
+      EZEnvironment.setWaitCursor();
+      
+      //load data
+      Map<String, List<IprGffObject>> allGffMap = loadIprData(fs);
+      
+      if (allGffMap == null) {
+        return;
+      }
+      
+      //annotate queries with data
+      if (importInNewView) {
+        importIprInNewView(allGffMap, fs[0].getName());
+      }
+      else {
+        importIprInCurrentView(allGffMap);
+      }
+      
+    }
+    
     public void run() {
       try {
         doAction();
@@ -200,6 +262,7 @@ public class ImportIprScanDomainsAction extends AbstractAction {
       }
     }
   }
+
   public void actionPerformed(ActionEvent event) {
     new Loader().start();
   }
