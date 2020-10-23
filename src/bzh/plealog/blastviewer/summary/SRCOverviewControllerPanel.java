@@ -181,7 +181,7 @@ public class SRCOverviewControllerPanel extends JPanel {
         ids = summary.getQueryClassification().getTermIDs();
         while(ids.hasMoreElements()) {
           id = ids.nextElement();
-          term = summary.getHitClassification().getTerm(id);
+          term = summary.getQueryClassification().getTerm(id);
           if ( ! term.getType().equals(SRCTerm.FAKE_TERM) ) {
             //then discard FAKE terms (those making path of Terms associated to hits)
             cClassification.addClassification(new SJTermSummary(id, term));

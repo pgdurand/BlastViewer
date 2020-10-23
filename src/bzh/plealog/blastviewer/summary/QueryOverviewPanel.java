@@ -313,15 +313,29 @@ public class QueryOverviewPanel extends JPanel {
 	 */
 	public void setQuery(QueryBase query) {
 	  this.currentQuery = query;
-	  updateResult();
+	  updateContent();
 	  this.infoPanel.repaint();
 	  this.repaint();
 	}
 
+	private void handleTerms(List<SJTermSummary> terms, SJFileSummary summary) {
+	  if(terms!=null) {
+      for(SJTermSummary term : terms) {
+        String vType = AnnotationDataModelConstants.CLASSIF_CODE_TO_NAME.get(term.getViewType());
+        if (vType!=null) {
+          this.classificationDataModel.setClassificationAvailable(vType);
+        }
+        else if (summary.hasTaxonomyData()) {
+          this.classificationDataModel.setClassificationAvailable(
+              AnnotationDataModelConstants.TAXON_INDEX_LABEL);
+        }
+      }
+    }
+	}
 	/**
 	 * Update the result panel looking at the current query's state 
 	 */
-	private void updateResult() {
+	public void updateContent() {
 	  //For future use: BLAST/PLAST engine may report an error
 	  this.lblError.setVisible(false);
 
@@ -348,19 +362,10 @@ public class QueryOverviewPanel extends JPanel {
 	  Enumeration<SJFileSummary> summaries = this.currentQuery.getSummaries();
 	  while(summaries.hasMoreElements()) {
 	    SJFileSummary summary = summaries.nextElement();
-	    List<SJTermSummary> terms = summary.getHitClassificationForView();
-	    if(terms!=null) {
-	      for(SJTermSummary term : terms) {
-	        String vType = AnnotationDataModelConstants.CLASSIF_CODE_TO_NAME.get(term.getViewType());
-	        if (vType!=null) {
-	          this.classificationDataModel.setClassificationAvailable(vType);
-	        }
-	        else if (summary.getTaxonomy()!=null||summary.getOrganism()!=null) {
-	          this.classificationDataModel.setClassificationAvailable(
-	              AnnotationDataModelConstants.TAXON_INDEX_LABEL);
-	        }
-	      }
-	    }
+	    //Hit
+	    handleTerms(summary.getHitClassificationForView(), summary);
+	    //Query (e.g. IPRscan domain prediction import)
+	    handleTerms(summary.getQueryClassificationForView(), summary);
 	  }
 
 	  // bar chart for hit and sequences

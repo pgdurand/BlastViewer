@@ -94,12 +94,14 @@ public class BlastSummaryViewerPanel extends JPanel {
   private ChooseClassificationAction _classifSelectAction;
   private OpenBasicViewerAction _openBasicViewerAction;
   private ImportIprScanDomainsAction _importIprScan;
+  private BlastSummaryViewerController _bvController;
   
   /**
    * Default constructor.
    */
   public BlastSummaryViewerPanel(BlastSummaryViewerController bvController) {
     super();
+    _bvController = bvController;
     createGUI();
   }
 
@@ -210,7 +212,8 @@ public class BlastSummaryViewerPanel extends JPanel {
    * Update viewer actions according to data.
    */
   private void updateActions(SROutput bo) {
-    if (bo.checkFeatures().equals(FEATURES_CONTAINER.none)) {
+    if (bo.checkFeatures().equals(FEATURES_CONTAINER.none) && 
+        bo.checkQueryFeatures().equals(FEATURES_CONTAINER.none)) {
       _classifSelectAction.setEnabled(false);
     }
   }
@@ -335,6 +338,7 @@ public class BlastSummaryViewerPanel extends JPanel {
       _importIprScan = new ImportIprScanDomainsAction(BVMessages.getString("BlastHitList.iprscan.btn"));
     }
     _importIprScan.setEnabled(true);
+    _importIprScan.setBlastSummaryViewerController(_bvController);
     btn = tBar.add(_importIprScan);
     btn.setToolTipText(BVMessages.getString("BlastHitList.iprscan.tip"));
     btn.setText(BVMessages.getString("BlastHitList.iprscan.btn"));

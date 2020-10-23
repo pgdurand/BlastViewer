@@ -84,8 +84,20 @@ public class BlastSummaryViewerController {
     _mainTab.setSelectedComponent(_bcoOverview);
   }
   
+  /**
+   * Show summary table and set particular selection type.
+   * 
+   * @param selType selection type. 
+   **/
   public void showSummary(Selection.SelectType selType) {
     _summary.showSummary(selType);
     _mainTab.setSelectedComponent(_summary);
+  }
+  
+  /**
+   * Update the content of the query overview panel.
+   * */
+  public void updateQueryOverviewContent() {
+    _completeSummary.updateContent();
   }
 }
