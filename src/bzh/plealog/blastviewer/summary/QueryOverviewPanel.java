@@ -319,15 +319,15 @@ public class QueryOverviewPanel extends JPanel {
 	}
 
 	private void handleTerms(List<SJTermSummary> terms, SJFileSummary summary) {
+	  if (summary.hasTaxonomyData()) {
+      this.classificationDataModel.setClassificationAvailable(
+          AnnotationDataModelConstants.TAXON_INDEX_LABEL);
+    }
 	  if(terms!=null) {
       for(SJTermSummary term : terms) {
         String vType = AnnotationDataModelConstants.CLASSIF_CODE_TO_NAME.get(term.getViewType());
         if (vType!=null) {
           this.classificationDataModel.setClassificationAvailable(vType);
-        }
-        else if (summary.hasTaxonomyData()) {
-          this.classificationDataModel.setClassificationAvailable(
-              AnnotationDataModelConstants.TAXON_INDEX_LABEL);
         }
       }
     }
