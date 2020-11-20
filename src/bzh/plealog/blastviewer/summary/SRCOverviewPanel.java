@@ -209,10 +209,10 @@ public class SRCOverviewPanel extends JPanel {
       header = tableColumn.getHeaderValue().toString();
       if (i != SRCOverviewTableModel.LABEL_COLUMN_INDEX) {
         if (i==SRCOverviewTableModel.RANK_COLUMN_INDEX) {
-          d = 4;
+          d = 6;
         }
         else {
-          d = 2;
+          d = 3;
         }
           
         val = d * fm.stringWidth(header);
@@ -220,8 +220,11 @@ public class SRCOverviewPanel extends JPanel {
         /*
          * Following can be use to lock the width of a column Could be interesting to
          * add to the TableHeaderColumItem a field specifying which column has a locked
-         * size. tc.setMinWidth(val); tc.setMaxWidth(val);
+         * size. 
          */
+        /*if(i==SRCOverviewTableModel.URL_COLUMN_INDEX) {
+          tableColumn.setMinWidth(val); tableColumn.setMaxWidth(val);
+        }*/
         tot += val;
       } else {
         lastTableColumn = tableColumn;

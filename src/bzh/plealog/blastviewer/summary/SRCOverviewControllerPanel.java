@@ -172,7 +172,8 @@ public class SRCOverviewControllerPanel extends JPanel {
           term = summary.getHitClassification().getTerm(id);
           if ( ! term.getType().equals(SRCTerm.FAKE_TERM) ) {
             //then discard FAKE terms (those making path of Terms associated to hits)
-            cClassification.addClassification(new SJTermSummary(id, term));
+            cClassification.addClassification(new SJTermSummary(id, term), 
+                SRClassificationCountTerm.TYPE.HIT);
           }
         }
       }
@@ -184,7 +185,8 @@ public class SRCOverviewControllerPanel extends JPanel {
           term = summary.getQueryClassification().getTerm(id);
           if ( ! term.getType().equals(SRCTerm.FAKE_TERM) ) {
             //then discard FAKE terms (those making path of Terms associated to hits)
-            cClassification.addClassification(new SJTermSummary(id, term));
+            cClassification.addClassification(new SJTermSummary(id, term), 
+                SRClassificationCountTerm.TYPE.QUERY);
           }
         }
       }

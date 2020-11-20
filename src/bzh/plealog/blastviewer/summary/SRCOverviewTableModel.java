@@ -99,12 +99,17 @@ public class SRCOverviewTableModel extends AbstractTableModel {
         sData[idx][SRCOverviewTableModel.RANK_COLUMN_INDEX] = idx;
         if(indexType.equals(AnnotationDataModelConstants.ANNOTATION_CATEGORY.TAX)) {
           s = term.getTerm().getID();
-          sData[idx][SRCOverviewTableModel.ACCESS_COLUMN_INDEX] = s.substring(s.indexOf(':')+1);
+          s = s.substring(s.indexOf(':')+1);
         }
         else {
-          sData[idx][SRCOverviewTableModel.ACCESS_COLUMN_INDEX] = term.getTerm().getID();
+          s = term.getTerm().getID();
         }
-        
+        sData[idx][SRCOverviewTableModel.ACCESS_COLUMN_INDEX] = 
+            String.format(
+                "[%s%s] %s", 
+                term.getQueryCount()!=0?"Q":"-",
+                term.getHitCount()!=0?"H":"-",
+                s);
         sData[idx][SRCOverviewTableModel.URL_COLUMN_INDEX] = "";
         sData[idx][SRCOverviewTableModel.LABEL_COLUMN_INDEX] = term.getTerm().getDescription();
         sData[idx][SRCOverviewTableModel.TAXRANK_COLUMN_INDEX] = "-";// TODO: specific code
