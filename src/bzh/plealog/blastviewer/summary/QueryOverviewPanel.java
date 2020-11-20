@@ -31,9 +31,12 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
 import javax.swing.UIManager;
 
 import org.jfree.chart.ChartFactory;
@@ -69,6 +72,7 @@ import bzh.plealog.bioinfo.api.data.searchjob.SJTermSummary;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.bioinfo.ui.util.Selection;
 import bzh.plealog.blastviewer.BlastSummaryViewerController;
+import bzh.plealog.blastviewer.actions.summary.ImportIprScanDomainsAction;
 import bzh.plealog.blastviewer.resources.BVMessages;
 
 /**
@@ -107,6 +111,7 @@ public class QueryOverviewPanel extends JPanel {
 	private QueryOverviewSRCDataTableModel classificationDataModel = null;
 	private HitAndSequencesDisplayer     hitAndSequencesDisplayer = new HitAndSequencesDisplayer();
 	private BlastSummaryViewerController _bvController;
+	private ImportIprScanDomainsAction   _importIprScan;
 	
 	/**
 	 * Constructor.
@@ -158,6 +163,30 @@ public class QueryOverviewPanel extends JPanel {
 	  piePlot.setOutlineVisible(false);
 	  return chart;
 	}
+
+	 private JToolBar getToolbar() {
+	    JToolBar tBar;
+	    ImageIcon icon;
+	    JButton btn;
+
+	    tBar = new JToolBar();
+	    tBar.setFloatable(false);
+	  
+	    icon = EZEnvironment.getImageIcon("import_bco_24_24.png");
+	    if (icon != null) {
+	      _importIprScan = new ImportIprScanDomainsAction("", icon);
+	    } else {
+	      _importIprScan = new ImportIprScanDomainsAction(BVMessages.getString("BlastHitList.iprscan.btn"));
+	    }
+	    _importIprScan.setEnabled(true);
+	    _importIprScan.setBlastSummaryViewerController(_bvController);
+	    btn = tBar.add(_importIprScan);
+	    btn.setToolTipText(BVMessages.getString("BlastHitList.iprscan.tip"));
+	    btn.setText(BVMessages.getString("BlastHitList.iprscan.btn"));
+	    
+	    return tBar;
+	  }
+	  
 
 	/**
 	 * Creathe the UI.
@@ -244,6 +273,9 @@ public class QueryOverviewPanel extends JPanel {
 	  tmp.add(classificationTable, BorderLayout.CENTER);
 	  tmp.setMaximumSize(new Dimension(DEFAULT_CHART_SIZE, DEFAULT_HEIGHT_CLASSIF));
 	  tmp.setMinimumSize(new Dimension(DEFAULT_CHART_SIZE, DEFAULT_HEIGHT_CLASSIF));
+	  JPanel pnl = new JPanel(new BorderLayout());
+    pnl.add(getToolbar(), BorderLayout.CENTER);
+    tmp.add(pnl, BorderLayout.SOUTH);
 	  this.resultPanel.add(tmp, c);
 
 	  // queries
@@ -290,7 +322,7 @@ public class QueryOverviewPanel extends JPanel {
 	  this.infoPanel.setLayout(new GridBagLayout());
 	  this.add(this.infoPanel, BorderLayout.EAST);
 	}
-
+	
 	/**
 	 * Update the parameter label to make it clickable : underline + cursor HAND
 	 * 
@@ -313,6 +345,7 @@ public class QueryOverviewPanel extends JPanel {
 	 */
 	public void setQuery(QueryBase query) {
 	  this.currentQuery = query;
+	  _importIprScan.SetQuery(query);
 	  updateContent();
 	  this.infoPanel.repaint();
 	  this.repaint();

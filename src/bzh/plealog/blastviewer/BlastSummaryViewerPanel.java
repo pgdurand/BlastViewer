@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -93,7 +94,7 @@ public class BlastSummaryViewerPanel extends JPanel {
   private GlobalSaveAction _saveAction;
   private ChooseClassificationAction _classifSelectAction;
   private OpenBasicViewerAction _openBasicViewerAction;
-  private ImportIprScanDomainsAction _importIprScan;
+  private MyImportIprScanDomainsAction _importIprScan;
   private BlastSummaryViewerController _bvController;
   
   /**
@@ -117,6 +118,7 @@ public class BlastSummaryViewerPanel extends JPanel {
     _saveAction.setTable(_summaryTable);
     _classifSelectAction.setTable(_summaryTable);
     _importIprScan.setTable(_summaryTable);
+    _importIprScan.SetQuery(query);
     _openBasicViewerAction.setTable(_summaryTable);
     
     QueryBaseUI qBaseUI;
@@ -333,9 +335,9 @@ public class BlastSummaryViewerPanel extends JPanel {
 
     icon = EZEnvironment.getImageIcon("import_bco_24_24.png");
     if (icon != null) {
-      _importIprScan = new ImportIprScanDomainsAction("", icon);
+      _importIprScan = new MyImportIprScanDomainsAction("", icon);
     } else {
-      _importIprScan = new ImportIprScanDomainsAction(BVMessages.getString("BlastHitList.iprscan.btn"));
+      _importIprScan = new MyImportIprScanDomainsAction(BVMessages.getString("BlastHitList.iprscan.btn"));
     }
     _importIprScan.setEnabled(true);
     _importIprScan.setBlastSummaryViewerController(_bvController);
@@ -568,4 +570,24 @@ public class BlastSummaryViewerPanel extends JPanel {
     }
   }
 
+  @SuppressWarnings("serial")
+  private class MyImportIprScanDomainsAction extends ImportIprScanDomainsAction{
+    private SummaryTable _table;
+    public MyImportIprScanDomainsAction(String name) {
+      super(name);
+      // TODO Auto-generated constructor stub
+    }
+    public MyImportIprScanDomainsAction(String name, Icon icon) {
+      super(name, icon);
+    }
+    /**
+     * Set data object.
+     */
+    public void setTable(SummaryTable table) {
+      _table = table;
+    }
+    public void updateUI() {
+      _table.updateRowHeights();
+    }
+  }
 }

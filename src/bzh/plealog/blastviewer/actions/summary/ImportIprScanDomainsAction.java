@@ -38,8 +38,6 @@ import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
 import bzh.plealog.bioinfo.io.gff.iprscan.IprGffObject;
 import bzh.plealog.bioinfo.io.gff.iprscan.IprGffReader;
 import bzh.plealog.bioinfo.tools.ImportIprScanPredictions;
-import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTable;
-import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.blastviewer.BlastSummaryViewerController;
 import bzh.plealog.blastviewer.resources.BVMessages;
 import bzh.plealog.blastviewer.util.BlastViewerOpener;
@@ -52,7 +50,7 @@ import bzh.plealog.blastviewer.util.BlastViewerOpener;
  */
 public class ImportIprScanDomainsAction extends AbstractAction {
   private static final long serialVersionUID = -3984245135396746453L;
-  private SummaryTable _table;
+  private QueryBase _query;
   private boolean _running = false;
   private BlastSummaryViewerController _bvController;
   //TODO: enable user to choose between two import modes
@@ -80,11 +78,8 @@ public class ImportIprScanDomainsAction extends AbstractAction {
     super(name, icon);
   }
 
-  /**
-   * Set data object.
-   */
-  public void setTable(SummaryTable table) {
-    _table = table;
+  public void SetQuery(QueryBase query) {
+    _query = query;
   }
   /**
    * Set BlastSummaryViewerController.
@@ -154,20 +149,19 @@ public class ImportIprScanDomainsAction extends AbstractAction {
      * */
     private void importIprInCurrentView(Map<String, List<IprGffObject>> allGffMap) {
       int ncount=0;
-      SummaryTableModel model = (SummaryTableModel) _table.getModel();
       SROutput sro;
-      int nannot, nSeqAnnotated=0, rows=model.getRowCount();
+      int nannot, nSeqAnnotated=0, rows=_query.sequences();
       ncount=0;
       String msg = BVMessages.getString("ImportIprScanFileAction.msg4");
       for(int i=0; i< rows; i++) {
         ncount++;
         BlastViewerOpener.setHelperMessage(String.format(msg, ncount, rows));
-        sro = (SROutput) model.getValueAt(i, SummaryTableModel.RESULT_DATA_COL);
+        sro = _query.getResult(i);
         ImportIprScanPredictions importer = new ImportIprScanPredictions();
         nannot = importer.annotateBlastWithIprscan(sro, allGffMap);
         if (nannot==0)
           continue;
-        SJFileSummary summary = (SJFileSummary) model.getValueAt(i, SummaryTableModel.SUMMARY_DATA_COL);
+        SJFileSummary summary = _query.getSummary(i);
         if (summary != null) {
           summary.updateQueryClassificationData(sro);
           nSeqAnnotated++;
@@ -180,7 +174,8 @@ public class ImportIprScanDomainsAction extends AbstractAction {
                   BVMessages.getString("ImportIprScanFileAction.msg2") );
         return;
       }
-      _table.updateRowHeights();
+      
+      updateUI();
     }
     
     /**
@@ -190,15 +185,12 @@ public class ImportIprScanDomainsAction extends AbstractAction {
      * @param viewName name of new view
      * */
     private void importIprInNewView(Map<String, List<IprGffObject>> allGffMap, String viewName) {
-      SummaryTableModel model = (SummaryTableModel) _table.getModel();
       SROutput          sro, sroMaster=null;
       int               size, nSeqAnnotated=0;
       
-      QueryBase query = model.getQuery();
-      
-      size = query.sequences();
+      size = _query.sequences();
       for(int i=0; i<size; i++) {
-        sro = (SROutput) query.getResult(i).clone(false);
+        sro = (SROutput) _query.getResult(i).clone(false);
         ImportIprScanPredictions importer = new ImportIprScanPredictions();
         if (importer.annotateBlastWithIprscan(sro, allGffMap)!=0)
           nSeqAnnotated++;
@@ -278,4 +270,7 @@ public class ImportIprScanDomainsAction extends AbstractAction {
     new Loader().start();
   }
 
+  public void updateUI() {
+    
+  }
 }
