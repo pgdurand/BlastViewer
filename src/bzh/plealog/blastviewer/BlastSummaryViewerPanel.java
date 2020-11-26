@@ -24,6 +24,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -96,6 +97,7 @@ public class BlastSummaryViewerPanel extends JPanel {
   private OpenBasicViewerAction _openBasicViewerAction;
   private MyImportIprScanDomainsAction _importIprScan;
   private BlastSummaryViewerController _bvController;
+  private JButton _startSearchBtn;
   
   /**
    * Default constructor.
@@ -211,6 +213,27 @@ public class BlastSummaryViewerPanel extends JPanel {
   }
 
   /**
+   * Filter out view using particular classifications.
+   * 
+   * @param classifs list of classification terms. Such terms come from
+   * AnnotationDataModelConstants.ANNOTATION_CATEGORY ; use getType().
+   */
+  public void applyClassificationFilter(List<String> classifs) {
+    _summaryTable.setClassificationsToView(classifs);
+  }
+  
+  /**
+   * Filter out view using a regular expression. It applies on table cell
+   * contents.
+   * 
+   * @param regexp a data filter
+   */
+  public void applyRegExpFilter(String regexp) {
+    _searcher.setSearchText(regexp);
+    _startSearchBtn.doClick();
+  }
+  
+  /**
    * Update viewer actions according to data.
    */
   private void updateActions(SROutput bo) {
@@ -255,7 +278,7 @@ public class BlastSummaryViewerPanel extends JPanel {
     
     JPanel pnlSearcher = new JPanel(new BorderLayout());
     _searcher = new TableSearcherComponent(_summaryTable);
-    _searcher.addUserAction(EZEnvironment.getImageIcon("findNew_s.png"), new SearchNextActionListener());
+    _startSearchBtn = _searcher.addUserAction(EZEnvironment.getImageIcon("findNew_s.png"), new SearchNextActionListener());
 
     pnlSearcher.add(viewTypePanel, BorderLayout.NORTH);
     pnlSearcher.add(_searcher, BorderLayout.SOUTH);
@@ -517,6 +540,7 @@ public class BlastSummaryViewerPanel extends JPanel {
       _resultStatusTxt.setText(nFound + " row" + (nFound != 1 ? "(s)" : "") + " selected");
       if (firstIdx != -1) {
         _summaryTable.scrollRectToVisible(_summaryTable.getCellRect(firstIdx, 0, false));
+        _summaryTable.repaint();
         indicesArray = new int[nFound];
         i = 0;
         for (Integer indice : indices) {

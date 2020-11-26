@@ -162,6 +162,14 @@ public class SRCOverviewTableModel extends AbstractTableModel {
     return _data;
   }
 
+  public String getAccession(int row) {
+    String value = this.getValueAt(row, SRCOverviewTableModel.ACCESS_COLUMN_INDEX).toString();
+    return value.substring(value.indexOf(' ')+1);
+  }
+  public String getLabel(int row) {
+    return this.getValueAt(row, SRCOverviewTableModel.LABEL_COLUMN_INDEX).toString();
+  }
+  
   private void createDefaultColHeaders(String defColIDs) {
     List<Integer> idSet;
 

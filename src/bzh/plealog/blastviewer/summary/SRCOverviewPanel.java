@@ -20,14 +20,22 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.FontMetrics;
+import java.awt.event.ActionEvent;
+import java.util.Arrays;
+import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellEditor;
@@ -37,6 +45,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import com.plealog.genericapp.api.EZEnvironment;
+import com.plealog.genericapp.api.log.EZLogger;
 
 import bzh.plealog.bioinfo.api.data.feature.AnnotationDataModelConstants;
 import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
@@ -60,9 +69,12 @@ public class SRCOverviewPanel extends JPanel {
   private JFeaturesTable _jfeaturesTable = null;
   private JScrollPane _jtableScrollPane = null;
   private SRCOverviewControllerPanel _bcoOverviewQueryPanel;
+  private BlastSummaryViewerController _bvController;
   private JPanel _cardTablePanel;
   private TableCellButtonLinker _cellLinker;
   private TableCellButtonRenderer _cellRenderer;
+  private ApplyFilterOnSummaryTableAction _applyFilterAction;
+  
   private static final String COMPUTATION_NO_DATA_FOUND_LABEL = BVMessages.getString("SRCOverviewPanel.lbl31");
   private static final String COMPUTATION_REFRESH_LABEL = BVMessages.getString("SRCOverviewPanel.lbl13");
   private static final String COMPUTATION_ON_GOING_LABEL = BVMessages.getString("SRCOverviewPanel.lbl14");
@@ -78,6 +90,7 @@ public class SRCOverviewPanel extends JPanel {
    */
   public SRCOverviewPanel(BlastSummaryViewerController bvController) {
     super();
+    _bvController = bvController;
     createUI();
   }
   /**
@@ -122,8 +135,35 @@ public class SRCOverviewPanel extends JPanel {
   public void showClassification(String vType) {
     _bcoOverviewQueryPanel.showClassification(vType);
   }
+  
   /**
-   * Creathe the UI.
+   * Prepare a toolbar.
+   */
+  private JToolBar getToolbar() {
+    JToolBar tBar;
+    ImageIcon icon;
+    JButton btn;
+
+    tBar = new JToolBar();
+    tBar.setFloatable(false);
+    
+    icon = EZEnvironment.getImageIcon("kartoView.png");
+    if (icon != null) {
+      _applyFilterAction = new ApplyFilterOnSummaryTableAction("", icon);
+    } else {
+      _applyFilterAction = new ApplyFilterOnSummaryTableAction(BVMessages.getString("SRCOverviewPanel.show.btn"));
+    }
+    _applyFilterAction.setEnabled(true);
+    _applyFilterAction.setTable(_jfeaturesTable);
+    btn = tBar.add(_applyFilterAction);
+    btn.setToolTipText(BVMessages.getString("SRCOverviewPanel.show.tip"));
+    btn.setText(BVMessages.getString("SRCOverviewPanel.show.btn"));
+    
+    return tBar;
+  }
+  
+  /**
+   * Create the the UI.
    */
   private void createUI() {
     setLayout(new BorderLayout());
@@ -159,8 +199,12 @@ public class SRCOverviewPanel extends JPanel {
 
     ((CardLayout) cardTablePanel.getLayout()).show(cardTablePanel, SEARCH_EMPTY_TABLE_PANEL_NAME);
 
+    JPanel navPanel = new JPanel(new BorderLayout());
+    navPanel.add(getToolbar(), BorderLayout.EAST);
+    
     add(actionTopPanel, BorderLayout.NORTH);
     add(cardTablePanel, BorderLayout.CENTER);
+    add(navPanel, BorderLayout.SOUTH);
   }
 
   private JPanel createInfoPanel(String label) {
@@ -259,6 +303,13 @@ public class SRCOverviewPanel extends JPanel {
         return false;
     }
 
+    public String getAccession(int row) {
+      return ((SRCOverviewTableModel) getModel()).getAccession(row);
+    }
+    public String getLabel(int row) {
+      return ((SRCOverviewTableModel) getModel()).getLabel(row);
+    }
+    
     public TableCellEditor getCellEditor(int row, int column) {
       if (column == SRCOverviewTableModel.URL_COLUMN_INDEX)
         return _cellLinker;
@@ -338,7 +389,83 @@ public class SRCOverviewPanel extends JPanel {
       }
       return new String[] { dbCode, dbId };
     }
+  }
+
+  private class ApplyFilterOnSummaryTableAction extends AbstractAction {
+    private static final long serialVersionUID = 6835170243955048141L;
+    private boolean _running = false;
+    private JFeaturesTable _table;
+    /**
+     * Action constructor.
+     * 
+     * @param name
+     *          the name of the action.
+     */
+    public ApplyFilterOnSummaryTableAction(String name) {
+      super(name);
+    }
+
+    /**
+     * Action constructor.
+     * 
+     * @param name
+     *          the name of the action.
+     * @param icon
+     *          the icon of the action.
+     */
+    public ApplyFilterOnSummaryTableAction(String name, Icon icon) {
+      super(name, icon);
+    }
+
+    /**
+     * Set data object.
+     */
+    public void setTable(JFeaturesTable table) {
+      _table = table;
+    }  
     
+    private void doAction() {
+      if (_running || _table==null)
+        return;
+
+      _running = true;
+      
+      String vType = _bcoOverviewQueryPanel.getSelectedClassification();
+      List<String> classifs = Arrays.asList(vType);
+      
+      int[] indices = _table.getSelectedRows();
+      if (indices.length==0)
+        return;
+      StringBuffer buf = new StringBuffer();
+      boolean isTaxonomy = AnnotationDataModelConstants.ANNOTATION_CATEGORY.TAX.getType().equals(vType);
+      for(int idx:indices) {
+        buf.append(isTaxonomy ?
+            _table.getLabel(idx) :
+              _table.getAccession(idx));
+        buf.append("|");
+      }
+
+      _bvController.applyFilterOnSummaryViewerPanel(classifs, buf.substring(0, buf.length()-1));
+    }
+
+    public void actionPerformed(ActionEvent event) {
+      Thread runner = new Thread() {
+        @Override
+        public void run() {
+          try {
+            doAction();
+          } catch (Throwable t) {
+            EZLogger.warn(BVMessages.getString("OpenFileAction.err")
+                + t.toString());
+          } finally {
+            _running = false;
+            EZEnvironment.setDefaultCursor();
+          }
+        }
+      };
+      runner.start();
+    }
+
   }
 
 }

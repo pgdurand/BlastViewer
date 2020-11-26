@@ -216,6 +216,11 @@ public class SRCOverviewControllerPanel extends JPanel {
     _parentPnl.updateModel(model);
   }
   
+  public String getSelectedClassification() {
+    Object classifType = _jcomboFeatureIndexes.getSelectedItem();
+    return AnnotationDataModelConstants.CLASSIF_NAME_TO_CODE.get(classifType.toString());
+  }
+  
   private class RefreshActionListener implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {

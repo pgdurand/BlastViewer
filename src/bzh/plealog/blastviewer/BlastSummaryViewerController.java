@@ -16,6 +16,8 @@
  */
 package bzh.plealog.blastviewer;
 
+import java.util.List;
+
 import javax.swing.JTabbedPane;
 
 import bzh.plealog.bioinfo.ui.util.Selection;
@@ -99,5 +101,22 @@ public class BlastSummaryViewerController {
    * */
   public void updateQueryOverviewContent() {
     _completeSummary.updateContent();
+  }
+  
+  /**
+   * Filter out view of the SummaryViewerPanel.
+   * 
+   * @param classificationTypes list of classification terms. Such terms come from
+   * AnnotationDataModelConstants.ANNOTATION_CATEGORY ; use getType().
+   * @param regexp a data filter
+   */
+  public void applyFilterOnSummaryViewerPanel(List<String> classificationTypes, String regexp) {
+    if (classificationTypes!=null) {
+      _summary.applyClassificationFilter(classificationTypes);
+    }
+    if (regexp!=null) {
+      _summary.applyRegExpFilter(regexp);
+    }
+    _mainTab.setSelectedComponent(_summary);
   }
 }
