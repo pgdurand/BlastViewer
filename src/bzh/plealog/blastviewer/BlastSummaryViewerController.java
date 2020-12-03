@@ -95,7 +95,12 @@ public class BlastSummaryViewerController {
     _summary.showSummary(selType);
     _mainTab.setSelectedComponent(_summary);
   }
-  
+  /**
+   * Show summary table.
+   **/
+  public void showSummary() {
+    _mainTab.setSelectedComponent(_summary);
+  }
   /**
    * Update the content of the query overview panel.
    * */

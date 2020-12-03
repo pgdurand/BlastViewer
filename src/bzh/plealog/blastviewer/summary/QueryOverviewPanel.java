@@ -25,10 +25,15 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.font.TextAttribute;
 import java.text.NumberFormat;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -69,6 +74,7 @@ import bzh.plealog.bioinfo.api.data.feature.AnnotationDataModelConstants;
 import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
 import bzh.plealog.bioinfo.api.data.searchjob.SJFileSummary;
 import bzh.plealog.bioinfo.api.data.searchjob.SJTermSummary;
+import bzh.plealog.bioinfo.io.searchresult.csv.ExtractAnnotation;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.bioinfo.ui.util.Selection;
 import bzh.plealog.blastviewer.BlastSummaryViewerController;
@@ -103,13 +109,14 @@ public class QueryOverviewPanel extends JPanel {
   private static final Font   PIE_CHART_LABEL_FONT = new Font(PIE_CHART_FONT_NAME, Font.PLAIN, 9);
 
   private QueryBase                    currentQuery = null;
-	private JPanel                       infoPanel = null;
 	private JPanel                       resultPanel = null;
 	private ChartPanel                   resultChart = null;
-	private ChartPanel                   sequencesChart = null;
+  private ChartPanel                   sequencesChart = null;
+  private ChartPanel                   classificationChart = null;
 	private JLabel                       lblError = null;
 	private QueryOverviewSRCDataTableModel classificationDataModel = null;
-	private HitAndSequencesDisplayer     hitAndSequencesDisplayer = new HitAndSequencesDisplayer();
+  private HitAndSequencesDisplayer     hitAndSequencesDisplayer = new HitAndSequencesDisplayer();
+  private ClassificationsDisplayer     classificationDisplayer = new ClassificationsDisplayer();
 	private BlastSummaryViewerController _bvController;
 	private ImportIprScanDomainsAction   _importIprScan;
 	
@@ -206,7 +213,7 @@ public class QueryOverviewPanel extends JPanel {
 	  c.fill = GridBagConstraints.NONE;
 	  c.gridx = 0;
 	  c.gridy = 0;
-	  c.gridwidth = 3;
+	  c.gridwidth = 4;
 	  c.insets = new Insets(0, 0, 20, 0);
 	  lblError = new JLabel("", EZEnvironment.getImageIcon("sign_warning.png"), 0);
 	  tmp.add(lblError);
@@ -222,13 +229,18 @@ public class QueryOverviewPanel extends JPanel {
 	  this.resultPanel.add(tmp, c);
 	  c.gridx = 1;
 	  tmp = new JPanel(new BorderLayout());
-	  tmp.add(new JLabel(BVMessages.getString("QueryOverviewPanel.lbl2")));
+	  tmp.add(new JLabel(BVMessages.getString("QueryOverviewPanel.lbl3")));
 	  this.resultPanel.add(tmp, c);
 	  c.gridx = 2;
 	  tmp = new JPanel(new BorderLayout());
-	  tmp.add(new JLabel(BVMessages.getString("QueryOverviewPanel.lbl3")));
+	  tmp.add(new JLabel(BVMessages.getString("QueryOverviewPanel.lbl2")));
 	  this.resultPanel.add(tmp, c);
+    c.gridx = 3;
+    tmp = new JPanel(new BorderLayout());
+    tmp.add(new JLabel(BVMessages.getString("QueryOverviewPanel.lbl8")));
+    this.resultPanel.add(tmp, c);
 
+    
 	  c = new GridBagConstraints();
 	  c.fill = GridBagConstraints.NONE;
 	  c.gridx = 0;
@@ -261,26 +273,9 @@ public class QueryOverviewPanel extends JPanel {
 	  });
 	  this.resultPanel.add(resultChart, c);
 
-	  // classification data
-	  c = new GridBagConstraints();
-	  c.fill = GridBagConstraints.NONE;
-	  c.gridx = 1;
-	  this.classificationDataModel = new QueryOverviewSRCDataTableModel();
-	  tmp = new JPanel(new BorderLayout());
-	  QueryOverviewSRCDataTable classificationTable = 
-	      new QueryOverviewSRCDataTable(this.resultPanel.getBackground(), this.classificationDataModel, _bvController);
-	  classificationTable.addMouseListener(new ClickableMouseListener());
-	  tmp.add(classificationTable, BorderLayout.CENTER);
-	  tmp.setMaximumSize(new Dimension(DEFAULT_CHART_SIZE, DEFAULT_HEIGHT_CLASSIF));
-	  tmp.setMinimumSize(new Dimension(DEFAULT_CHART_SIZE, DEFAULT_HEIGHT_CLASSIF));
-	  JPanel pnl = new JPanel(new BorderLayout());
-    pnl.add(getToolbar(), BorderLayout.CENTER);
-    tmp.add(pnl, BorderLayout.SOUTH);
-	  this.resultPanel.add(tmp, c);
-
 	  // queries
 	  c.fill = GridBagConstraints.HORIZONTAL;
-	  c.gridx = 2;
+	  c.gridx = 1;
 	  this.sequencesChart = new ChartPanel(
 	      ChartFactory.createBarChart(
 	          null, "", "", 
@@ -305,22 +300,76 @@ public class QueryOverviewPanel extends JPanel {
 	      if (entity instanceof CategoryItemEntity) {
 	        String sectionClicked = ((CategoryItemEntity) entity).getRowKey().toString();
 	        if (sectionClicked.equals(BARCHART_SECTION_SEQUENCES)) {
-	          //getProjectManagerPanel().showBestHitTable(SelectType.ALL);
+	          _bvController.showSummary();
 	        } else if (sectionClicked.equals(BARCHART_SECTION_HITS)) {
-	          //getProjectManagerPanel().showHitTable();
+            _bvController.showSummary();
 	        }
 	      }
 	    }
 	  });
 	  this.resultPanel.add(this.sequencesChart, c);
+	  
+	   // classification data
+    c = new GridBagConstraints();
+    c.fill = GridBagConstraints.NONE;
+    c.gridx = 2;
+    this.classificationDataModel = new QueryOverviewSRCDataTableModel();
+    tmp = new JPanel(new BorderLayout());
+    QueryOverviewSRCDataTable classificationTable = 
+        new QueryOverviewSRCDataTable(this.resultPanel.getBackground(), this.classificationDataModel, _bvController);
+    classificationTable.addMouseListener(new ClickableMouseListener());
+    tmp.add(classificationTable, BorderLayout.CENTER);
+    tmp.setMaximumSize(new Dimension(DEFAULT_CHART_SIZE, DEFAULT_HEIGHT_CLASSIF));
+    tmp.setMinimumSize(new Dimension(DEFAULT_CHART_SIZE, DEFAULT_HEIGHT_CLASSIF));
+    this.resultPanel.add(tmp, c);
+
+    // classifications plots by types
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.gridx = 3;
+    this.classificationChart = new ChartPanel(
+        ChartFactory.createBarChart(
+            null, "", "", 
+            new DefaultCategoryDataset(), 
+            PlotOrientation.VERTICAL, false, false, false),
+          3*DEFAULT_CHART_SIZE/2, DEFAULT_CHART_SIZE, 3*DEFAULT_CHART_SIZE/2, 
+          DEFAULT_CHART_SIZE, 3*DEFAULT_CHART_SIZE/2, DEFAULT_CHART_SIZE, 
+          false, false, false, false, false,
+        false);
+    this.classificationChart.setMinimumSize(new Dimension(3*DEFAULT_CHART_SIZE/2, DEFAULT_CHART_SIZE));
+    this.classificationChart.addMouseListener(new ClickableMouseListener());
+    this.classificationChart.addChartMouseListener(new ChartMouseListener() {
+
+      @Override
+      public void chartMouseMoved(ChartMouseEvent arg0) {
+
+      }
+
+      @Override
+      public void chartMouseClicked(ChartMouseEvent arg0) {
+        ChartEntity entity = arg0.getEntity();
+        if (entity instanceof CategoryItemEntity) {
+          String sectionClicked = ((CategoryItemEntity) entity).getRowKey().toString();
+          _bvController.applyFilterOnSummaryViewerPanel(Arrays.asList(sectionClicked), null);
+          _bvController.showSummary();
+        }
+      }
+    });
+    this.resultPanel.add(this.classificationChart, c);
+	  
+    //toolbar
+    JPanel pnl = new JPanel(new BorderLayout());
+    pnl.add(getToolbar(), BorderLayout.CENTER);
+    c = new GridBagConstraints();
+    c.fill = GridBagConstraints.NONE;
+    c.gridx = 0;
+    c.gridy = 3;
+    c.gridwidth = 4;
+    this.resultPanel.add(pnl, c);
+    
+    //overall view within a scroll panel
 	  JScrollPane scroller = new JScrollPane(this.resultPanel);
 	  scroller.setBorder(BorderFactory.createEmptyBorder());
 	  this.add(scroller, BorderLayout.CENTER);
-
-
-	  this.infoPanel = new JPanel();
-	  this.infoPanel.setLayout(new GridBagLayout());
-	  this.add(this.infoPanel, BorderLayout.EAST);
 	}
 	
 	/**
@@ -347,7 +396,6 @@ public class QueryOverviewPanel extends JPanel {
 	  this.currentQuery = query;
 	  _importIprScan.SetQuery(query);
 	  updateContent();
-	  this.infoPanel.repaint();
 	  this.repaint();
 	}
 
@@ -403,6 +451,7 @@ public class QueryOverviewPanel extends JPanel {
 
 	  // bar chart for hit and sequences
 	  this.hitAndSequencesDisplayer.updateContent();
+	  this.classificationDisplayer.updateContent();
 	  this.revalidate();
 	  this.repaint();
 
@@ -423,8 +472,9 @@ public class QueryOverviewPanel extends JPanel {
 	    }
 	    DefaultCategoryDataset sequencesDataSet = new DefaultCategoryDataset();
 	    sequencesDataSet.addValue(QueryOverviewPanel.this.currentQuery.sequences(), BARCHART_SECTION_SEQUENCES, "");
-	    sequencesDataSet.addValue(nbAccessions, BARCHART_SECTION_HITS, "");
-	    JFreeChart chart = ChartFactory.createBarChart(null, "", "", sequencesDataSet, PlotOrientation.VERTICAL, true, false, false);
+      sequencesDataSet.addValue(nbAccessions, BARCHART_SECTION_HITS, "");
+      
+      JFreeChart chart = ChartFactory.createBarChart(null, "", "", sequencesDataSet, PlotOrientation.VERTICAL, true, false, false);
 	    chart.setBackgroundPaint(QueryOverviewPanel.this.getBackground());
 	    // legend
 	    LegendTitle legend = (LegendTitle) chart.getLegend();
@@ -432,7 +482,7 @@ public class QueryOverviewPanel extends JPanel {
 	    legend.setItemFont(UIManager.getFont("Label.font"));
 	    legend.setItemPaint(UIManager.getColor("Label.foreground"));
 	    legend.setBackgroundPaint(QueryOverviewPanel.this.getBackground());
-	    // get a reference to the plot for further customisation...
+	    // get a reference to the plot for further customization...
 	    CategoryPlot plot = chart.getCategoryPlot();
 	    // remove y axis
 	    plot.getRangeAxis().setVisible(false);
@@ -469,4 +519,88 @@ public class QueryOverviewPanel extends JPanel {
 	    QueryOverviewPanel.this.sequencesChart.setVisible(true);
 	  }
 	}
+	
+	/*
+   * For future use, use a separate class. Future use means adding BLAST/PLAST engine to BlastViewer.
+   * At that time, we'll need to refresh dynamically this viewer.
+   * */
+  private class ClassificationsDisplayer {
+
+    private Map<String, Integer> collectHitCountsByClassifications(){
+      Map<String, Integer> data, sroData; 
+
+      data = new Hashtable<>();
+      for(int i=0;i<QueryOverviewPanel.this.currentQuery.sequences();i++) {
+        sroData = ExtractAnnotation.countHitsByClassification(QueryOverviewPanel.this.currentQuery.getResult(i));
+        //from: https://stackoverflow.com/questions/23038673/merging-two-mapstring-integer-with-java-8-stream-api
+        data = Stream.of(data, sroData)
+            .map(Map::entrySet)
+            .flatMap(Collection::stream)
+            .collect(
+                Collectors.toMap(
+                    Map.Entry::getKey,
+                    Map.Entry::getValue,
+                    Integer::sum
+                    )
+                );
+      }
+      return data;
+
+    }
+    public void updateContent() {
+      DefaultCategoryDataset sequencesDataSet = new DefaultCategoryDataset();
+      int max = 0, min = Integer.MAX_VALUE;
+      double pctDif;
+      
+      QueryOverviewPanel.this.classificationChart.setVisible(false);
+
+      Map<String, Integer> data = collectHitCountsByClassifications();
+      
+      data.entrySet()
+        .stream()
+        .sorted(Map.Entry.comparingByKey())
+        .forEachOrdered(x -> sequencesDataSet.addValue(x.getValue(), x.getKey(), ""));
+      
+      JFreeChart chart = ChartFactory.createBarChart(null, "", "", 
+          sequencesDataSet, PlotOrientation.VERTICAL, true, false, false);
+      chart.setBackgroundPaint(QueryOverviewPanel.this.getBackground());
+      // legend
+      LegendTitle legend = (LegendTitle) chart.getLegend();
+      legend.setBorder(0, 0, 0, 0);
+      legend.setItemFont(UIManager.getFont("Label.font"));
+      legend.setItemPaint(UIManager.getColor("Label.foreground"));
+      legend.setBackgroundPaint(QueryOverviewPanel.this.getBackground());
+      // get a reference to the plot for further customization...
+      CategoryPlot plot = chart.getCategoryPlot();
+      // remove y axis
+      plot.getRangeAxis().setVisible(false);
+      plot.setRangeGridlinesVisible(false);
+      plot.setBackgroundPaint(new Color(0, 0, 0, 0));
+      plot.setOutlineVisible(false);
+      BarRenderer renderer = (BarRenderer) plot.getRenderer();
+      renderer.setShadowVisible(false);
+      // display values
+      
+      for (int i = 0; i < sequencesDataSet.getRowCount(); i++) {
+        renderer.setSeriesItemLabelGenerator(i, 
+            new StandardCategoryItemLabelGenerator("{2}", 
+            NumberFormat.getInstance(Locale.US)));
+        renderer.setSeriesItemLabelsVisible(i, true);
+        renderer.setSeriesItemLabelFont(i, UIManager.getFont("Label.font"));
+        renderer.setSeriesItemLabelPaint(i, UIManager.getColor("Label.foreground"));
+        min = sequencesDataSet.getValue(sequencesDataSet.getRowKey(i), "").intValue();
+        max = QueryOverviewPanel.this.currentQuery.sequences();
+        pctDif = ((double) min / (double) max) * 100;
+        if (pctDif > 90) {
+          renderer.setSeriesPositiveItemLabelPosition(i, new ItemLabelPosition(
+              ItemLabelAnchor.CENTER, TextAnchor.BASELINE_CENTER));
+        }
+      }
+      renderer.setBarPainter(new StandardBarPainter());
+
+      chart.getCategoryPlot().setRenderer(renderer);
+      QueryOverviewPanel.this.classificationChart.setChart(chart);
+      QueryOverviewPanel.this.classificationChart.setVisible(true);
+    }
+  }
 }
