@@ -20,7 +20,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
@@ -31,12 +30,13 @@ import com.plealog.genericapp.api.EZEnvironment;
 import com.plealog.genericapp.api.file.EZFileManager;
 import com.plealog.genericapp.api.log.EZLogger;
 
+import bzh.plealog.bioinfo.api.data.feature.FeatureTable;
 import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
 import bzh.plealog.bioinfo.api.data.searchjob.SJFileSummary;
 import bzh.plealog.bioinfo.api.data.searchresult.SRIteration;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
-import bzh.plealog.bioinfo.io.gff.iprscan.IprGffObject;
 import bzh.plealog.bioinfo.io.gff.iprscan.IprGffReader;
+import bzh.plealog.bioinfo.io.xml.iprscan.IprXmlReader;
 import bzh.plealog.bioinfo.tools.ImportIprScanPredictions;
 import bzh.plealog.blastviewer.BlastSummaryViewerController;
 import bzh.plealog.blastviewer.resources.BVMessages;
@@ -110,35 +110,51 @@ public class ImportIprScanDomainsAction extends AbstractAction {
      * 
      * @return Iprscan data or null if files do not contain any appropriate data
      * */
-    private Map<String, List<IprGffObject>> loadIprData(File[] fs) {
+    private Map<String, FeatureTable> loadIprData(File[] fList) {
       //Collect GFF3 files...
   
       EZLogger.info(String.format(BVMessages.getString("ImportIprScanFileAction.log3"), 
-          fs.length));
+          fList.length));
       
       //... then collect all domains
-      Map<String, List<IprGffObject>> allGffMap, gffMap;
-      allGffMap = new HashMap<String, List<IprGffObject>>();
+      Map<String, FeatureTable> allGffMap, ftMap;
+      allGffMap = new HashMap<>();
       String msg = BVMessages.getString("ImportIprScanFileAction.msg3");
       int ncount=0;
-      for(File f:fs) {
+      IprGffReader gr = new IprGffReader();
+      IprXmlReader xr = new IprXmlReader();
+      for(File f:fList) {
         ncount++;
-        BlastViewerOpener.setHelperMessage(String.format(msg, ncount, fs.length));
-        IprGffReader gr = new IprGffReader();
-        gffMap = gr.processFileToMap(f.getAbsolutePath());
-        allGffMap.putAll(gffMap);
+        BlastViewerOpener.setHelperMessage(String.format(msg, ncount, fList.length));
+        String fs = f.getAbsolutePath();
+        if (gr.canRead(fs)) {
+          ftMap = gr.readFile(fs);
+        }
+        else if (xr.canRead(fs)){
+          ftMap = xr.readFile(fs);
+        }
+        else {
+          ftMap = null;
+        }
+        if(ftMap==null || ftMap.isEmpty()) {
+          EZLogger.warn(
+              String.format("No IprScan predictions loaded from: %s", f.getAbsolutePath()));
+        }
+        else {
+          allGffMap.putAll(ftMap);
+        }
       }
       
       if (allGffMap.isEmpty()) {
         EZEnvironment.displayInfoMessage(EZEnvironment.getParentFrame(), 
-            fs.length==1 ?
+            fList.length==1 ?
                 BVMessages.getString("ImportIprScanFileAction.msg1") : 
                   BVMessages.getString("ImportIprScanFileAction.msg1b") );
         return null;
       }
       
       EZLogger.info(String.format(BVMessages.getString("ImportIprScanFileAction.log1"), 
-          fs.length, allGffMap.size()));
+          fList.length, allGffMap.size()));
       
       return allGffMap;
     }
@@ -147,7 +163,7 @@ public class ImportIprScanDomainsAction extends AbstractAction {
      * 
      * @param allGffMap IPRscan data
      * */
-    private void importIprInCurrentView(Map<String, List<IprGffObject>> allGffMap) {
+    private void importIprInCurrentView(Map<String, FeatureTable> allGffMap) {
       int ncount=0;
       SROutput sro;
       int nannot, nSeqAnnotated=0, rows=_query.sequences();
@@ -184,7 +200,7 @@ public class ImportIprScanDomainsAction extends AbstractAction {
      * @param allGffMap IPRscan data
      * @param viewName name of new view
      * */
-    private void importIprInNewView(Map<String, List<IprGffObject>> allGffMap, String viewName) {
+    private void importIprInNewView(Map<String, FeatureTable> allGffMap, String viewName) {
       SROutput          sro, sroMaster=null;
       int               size, nSeqAnnotated=0;
       
@@ -234,7 +250,7 @@ public class ImportIprScanDomainsAction extends AbstractAction {
       EZEnvironment.setWaitCursor();
       
       //load data
-      Map<String, List<IprGffObject>> allGffMap = loadIprData(fs);
+      Map<String, FeatureTable> allGffMap = loadIprData(fs);
       
       if (allGffMap == null) {
         return;
