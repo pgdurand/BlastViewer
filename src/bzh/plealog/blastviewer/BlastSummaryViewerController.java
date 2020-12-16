@@ -124,4 +124,8 @@ public class BlastSummaryViewerController {
     }
     _mainTab.setSelectedComponent(_summary);
   }
+  
+  public void showQueryWithClassificationSummaryTab() {
+    
+  }
 }

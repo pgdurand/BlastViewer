@@ -266,6 +266,7 @@ public class ImportIprScanDomainsAction extends AbstractAction {
       
       //update the query overview panel
       _bvController.updateQueryOverviewContent();
+      _bvController.showQueryWithClassificationSummaryTab();
     }
     
     public void run() {

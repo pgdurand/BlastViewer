@@ -24,6 +24,7 @@ import javax.swing.JTabbedPane;
 
 import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
 import bzh.plealog.bioinfo.api.data.searchresult.SROutput;
+import bzh.plealog.bioinfo.api.data.searchresult.SROutput.FEATURES_CONTAINER;
 import bzh.plealog.bioinfo.api.data.searchresult.SRRequestInfo;
 import bzh.plealog.bioinfo.data.searchjob.InMemoryQuery;
 import bzh.plealog.bioinfo.data.searchresult.SRUtils;
@@ -61,7 +62,10 @@ public class BlastQueryViewer extends JPanel {
     
     //Complete Summary
     _completeSummary.setQuery(query);
-    
+    if( ! so.checkQueryFeatures().equals(FEATURES_CONTAINER.none)) {
+      _completeSummary.showQueryWithClassificationSummaryTab();
+    }
+
     //dual query/hit tables
     _summary.setContent(query, entry);
     
