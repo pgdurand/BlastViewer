@@ -126,6 +126,6 @@ public class BlastSummaryViewerController {
   }
   
   public void showQueryWithClassificationSummaryTab() {
-    
+    _completeSummary.showQueryWithClassificationSummaryTab();
   }
 }

@@ -61,7 +61,7 @@ public class BlastQueryViewer extends JPanel {
     QueryBase query = prepareQuery(entry);
     
     //Complete Summary
-    _completeSummary.setQuery(query);
+    _completeSummary.setData(query, so);
     if( ! so.checkQueryFeatures().equals(FEATURES_CONTAINER.none)) {
       _completeSummary.showQueryWithClassificationSummaryTab();
     }

@@ -23,6 +23,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.awt.font.TextAttribute;
 import java.text.NumberFormat;
 import java.util.Arrays;
@@ -35,7 +36,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -70,6 +73,7 @@ import org.jfree.data.general.PieDataset;
 import org.jfree.ui.TextAnchor;
 
 import com.plealog.genericapp.api.EZEnvironment;
+import com.plealog.genericapp.api.log.EZLogger;
 
 import bzh.plealog.bioinfo.api.data.feature.AnnotationDataModelConstants;
 import bzh.plealog.bioinfo.api.data.searchjob.QueryBase;
@@ -80,8 +84,10 @@ import bzh.plealog.bioinfo.io.searchresult.csv.ExtractAnnotation;
 import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.bioinfo.ui.util.Selection;
 import bzh.plealog.blastviewer.BlastSummaryViewerController;
+import bzh.plealog.blastviewer.actions.api.BVGenericSaveUtils;
 import bzh.plealog.blastviewer.actions.summary.ImportIprScanDomainsAction;
 import bzh.plealog.blastviewer.resources.BVMessages;
+import bzh.plealog.blastviewer.util.BlastViewerOpener;
 
 /**
  * This panel displays an overview of a QueryBase.
@@ -125,6 +131,7 @@ public class QueryOverviewPanel extends JPanel {
   private ClassificationsDisplayer     qClassificationDisplayer = new QueryClassificationsDisplayer();
 	private BlastSummaryViewerController _bvController;
 	private ImportIprScanDomainsAction   _importIprScan;
+	private SaveResultAction             _saveResult;
 	
 	/**
 	 * Constructor.
@@ -145,9 +152,14 @@ public class QueryOverviewPanel extends JPanel {
 	public String getTitle() {
     return BVMessages.getString("QueryOverviewPanel.title");
   }
+	
+	/**
+	 * Forces display of panel with queries classification.
+	 */
 	public void showQueryWithClassificationSummaryTab(){
 	  queriesBestHitClassifTab.setSelectedIndex(1);
 	}
+	
 	/**
 	 * Creates a pie chart
 	 * 
@@ -199,6 +211,19 @@ public class QueryOverviewPanel extends JPanel {
 	    btn.setToolTipText(BVMessages.getString("BlastHitList.iprscan.tip"));
 	    btn.setText(BVMessages.getString("BlastHitList.iprscan.btn"));
 	    
+	    tBar.addSeparator();
+	    
+      icon = EZEnvironment.getImageIcon("saveRes.png");
+      if (icon != null) {
+        _saveResult = new SaveResultAction("", icon);
+      } else {
+        _saveResult = new SaveResultAction(BVMessages.getString("QueryOverviewPanel.lbl10"));
+      }
+      _saveResult.setEnabled(true);
+      btn = tBar.add(_saveResult);
+      btn.setToolTipText(BVMessages.getString("BlastHitList.save.tip"));
+      btn.setText(BVMessages.getString("QueryOverviewPanel.lbl10"));
+	    
 	    return tBar;
 	  }
 	  
@@ -248,7 +273,7 @@ public class QueryOverviewPanel extends JPanel {
     tmp.add(new JLabel(BVMessages.getString("QueryOverviewPanel.lbl8")));
     this.resultPanel.add(tmp, c);
 
-    
+    // Pie chart with "hit/no hits"
 	  c = new GridBagConstraints();
 	  c.fill = GridBagConstraints.NONE;
 	  c.gridx = 0;
@@ -281,7 +306,7 @@ public class QueryOverviewPanel extends JPanel {
 	  });
 	  this.resultPanel.add(resultChart, c);
 
-	  // queries
+	  // bar plot with queries and all hits
 	  c.fill = GridBagConstraints.HORIZONTAL;
 	  c.gridx = 1;
 	  this.sequencesChart = new ChartPanel(
@@ -317,7 +342,7 @@ public class QueryOverviewPanel extends JPanel {
 	  });
 	  this.resultPanel.add(this.sequencesChart, c);
 	  
-	   // classification data
+	   // Table with classification data
     c = new GridBagConstraints();
     c.fill = GridBagConstraints.NONE;
     c.gridx = 2;
@@ -331,7 +356,7 @@ public class QueryOverviewPanel extends JPanel {
     tmp.setMinimumSize(new Dimension(DEFAULT_CHART_SIZE, DEFAULT_HEIGHT_CLASSIF));
     this.resultPanel.add(tmp, c);
 
-    //Query / Best Hits with classification data
+    //Query / Best Hits plots with classification data
     queriesBestHitClassifTab = new JTabbedPane(JTabbedPane.BOTTOM);
     queriesBestHitClassifTab.add(BEST_HITS_CARD, hClassificationDisplayer.getChatPanel());
     queriesBestHitClassifTab.add(QUERIES_CARD, qClassificationDisplayer.getChatPanel());
@@ -345,8 +370,10 @@ public class QueryOverviewPanel extends JPanel {
     pnl.add(getToolbar(), BorderLayout.CENTER);
     c = new GridBagConstraints();
     c.fill = GridBagConstraints.NONE;
-    c.gridx = 2;
+    c.anchor = GridBagConstraints.LINE_START;
+    c.gridx = 0;
     c.gridy = 3;
+    c.gridwidth = 4;
     this.resultPanel.add(pnl, c);
   
     //overall view within a scroll panel
@@ -375,9 +402,10 @@ public class QueryOverviewPanel extends JPanel {
 	 *  
 	 * @param query
 	 */
-	public void setQuery(QueryBase query) {
+	public void setData(QueryBase query, SROutput sro) {
 	  this.currentQuery = query;
 	  _importIprScan.SetQuery(query);
+	  _saveResult.setResult(sro);
 	  updateContent();
 	  this.repaint();
 	}
@@ -637,5 +665,48 @@ public class QueryOverviewPanel extends JPanel {
     public Map<String, Integer> getData(SROutput sro){
       return ExtractAnnotation.countQueriesByClassification(sro);
     }
+  }
+  
+  public class SaveResultAction extends AbstractAction {
+    private static final long serialVersionUID = 7593962877992656248L;
+    private boolean _running = false;
+    private SROutput _sro;
+    
+    public SaveResultAction(String name) {
+      super(name);
+    }
+
+    public SaveResultAction(String name, Icon icon) {
+      super(name, icon);
+    }
+
+    public void setResult(SROutput sro) {
+      _sro = sro;
+    }
+  
+    private class Loader extends Thread {
+      private void doAction() {
+        BVGenericSaveUtils bsu = new BVGenericSaveUtils(_sro);
+        bsu.saveResult();
+      }
+      public void run() {
+        if (_running)
+          return;
+        _running = true;
+        try {
+          doAction();
+        } catch (Throwable t) {
+          EZLogger.warn(BVMessages.getString("SaveFileAction.err") + t.toString());
+        } finally {
+          _running=false;
+          EZEnvironment.setDefaultCursor();
+          BlastViewerOpener.cleanHelperMessage();
+        }
+      }
+    }
+      
+    public void actionPerformed(ActionEvent event) {
+      new Loader().start();
+    }  
   }
 }
