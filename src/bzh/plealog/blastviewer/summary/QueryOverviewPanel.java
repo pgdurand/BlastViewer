@@ -39,13 +39,10 @@ import java.util.stream.Stream;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JToolBar;
 import javax.swing.UIManager;
 
 import org.jfree.chart.ChartFactory;
@@ -85,7 +82,6 @@ import bzh.plealog.bioinfo.ui.blast.resulttable.SummaryTableModel;
 import bzh.plealog.bioinfo.ui.util.Selection;
 import bzh.plealog.blastviewer.BlastSummaryViewerController;
 import bzh.plealog.blastviewer.actions.api.BVGenericSaveUtils;
-import bzh.plealog.blastviewer.actions.summary.ImportIprScanDomainsAction;
 import bzh.plealog.blastviewer.resources.BVMessages;
 import bzh.plealog.blastviewer.util.BlastViewerOpener;
 
@@ -130,8 +126,8 @@ public class QueryOverviewPanel extends JPanel {
   private ClassificationsDisplayer     hClassificationDisplayer = new HitClassificationsDisplayer();
   private ClassificationsDisplayer     qClassificationDisplayer = new QueryClassificationsDisplayer();
 	private BlastSummaryViewerController _bvController;
-	private ImportIprScanDomainsAction   _importIprScan;
-	private SaveResultAction             _saveResult;
+	//private ImportIprScanDomainsAction   _importIprScan;
+	//private SaveResultAction             _saveResult;
 	
 	/**
 	 * Constructor.
@@ -191,7 +187,7 @@ public class QueryOverviewPanel extends JPanel {
 	  return chart;
 	}
 
-	 private JToolBar getToolbar() {
+	 /*private JToolBar getToolbar() {
 	    JToolBar tBar;
 	    ImageIcon icon;
 	    JButton btn;
@@ -225,7 +221,7 @@ public class QueryOverviewPanel extends JPanel {
       btn.setText(BVMessages.getString("QueryOverviewPanel.lbl10"));
 	    
 	    return tBar;
-	  }
+	  }*/
 	  
 
 	/**
@@ -366,6 +362,9 @@ public class QueryOverviewPanel extends JPanel {
     this.resultPanel.add(queriesBestHitClassifTab, c);
 	  
     //toolbar
+    /*
+    To solve later: using these commands lock down entirely the application!
+    For now, do not know why...
     JPanel pnl = new JPanel(new BorderLayout());
     pnl.add(getToolbar(), BorderLayout.CENTER);
     c = new GridBagConstraints();
@@ -374,7 +373,7 @@ public class QueryOverviewPanel extends JPanel {
     c.gridx = 0;
     c.gridy = 3;
     c.gridwidth = 4;
-    this.resultPanel.add(pnl, c);
+    this.resultPanel.add(pnl, c);*/
   
     //overall view within a scroll panel
 	  JScrollPane scroller = new JScrollPane(this.resultPanel);
@@ -404,8 +403,8 @@ public class QueryOverviewPanel extends JPanel {
 	 */
 	public void setData(QueryBase query, SROutput sro) {
 	  this.currentQuery = query;
-	  _importIprScan.SetQuery(query);
-	  _saveResult.setResult(sro);
+	  //_importIprScan.SetQuery(query);
+	  //_saveResult.setResult(sro);
 	  updateContent();
 	  this.repaint();
 	}
