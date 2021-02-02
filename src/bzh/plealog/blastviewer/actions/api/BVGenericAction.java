@@ -19,7 +19,6 @@ package bzh.plealog.blastviewer.actions.api;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.SwingUtilities;
 
 import com.plealog.genericapp.api.EZEnvironment;
 import com.plealog.genericapp.api.log.EZLogger;
@@ -65,26 +64,27 @@ public class BVGenericAction extends AbstractAction {
     _hitTable = ht;
   }
 
-  public void actionPerformed(ActionEvent event) {
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          SROutput sro = _hitTable.getResult();
-          int iterNum = _hitTable.getSelectedIteration();
-          int [] selHits = _hitTable.getSelectedHits();
-          _act.execute(
-              sro, 
-              iterNum,
-              selHits);
-        } catch (Throwable t) {
-          EZLogger.warn(BVMessages.getString("OpenFileAction.err")
-              + t.toString());
-        } finally {
-          EZEnvironment.setDefaultCursor();
-        }
+  private class ActionRunner extends Thread {
+    @Override
+    public void run() {
+      try {
+        SROutput sro = _hitTable.getResult();
+        int iterNum = _hitTable.getSelectedIteration();
+        int [] selHits = _hitTable.getSelectedHits();
+        _act.execute(
+            sro, 
+            iterNum,
+            selHits);
+      } catch (Throwable t) {
+        EZLogger.warn(BVMessages.getString("OpenFileAction.err")
+            + t.toString());
+      } finally {
+        EZEnvironment.setDefaultCursor();
       }
-    });
+    }
+  }
+  public void actionPerformed(ActionEvent event) {
+   new ActionRunner().start();
   }
 
 }
