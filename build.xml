@@ -97,6 +97,7 @@
       <include name="**/*properties"/>
       <include name="**/*messages"/>
       <include name="**/*cfg"/>
+      <include name="**/*conf"/>
       <include name="**/*gif"/>
       <include name="**/*png"/>
       <include name="**/*xml"/>
