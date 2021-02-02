@@ -55,7 +55,6 @@ import bzh.plealog.bioinfo.ui.blast.hittable.PercentRenderer;
 import bzh.plealog.bioinfo.ui.feature.FeatureWebLinker;
 import bzh.plealog.bioinfo.ui.feature.TableCellButtonLinker;
 import bzh.plealog.bioinfo.ui.feature.TableCellButtonRenderer;
-import bzh.plealog.bioinfo.ui.resources.SVMessages;
 import bzh.plealog.blastviewer.BlastSummaryViewerController;
 import bzh.plealog.blastviewer.resources.BVMessages;
 
