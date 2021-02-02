@@ -21,6 +21,7 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -54,6 +55,7 @@ import bzh.plealog.bioinfo.ui.blast.hittable.PercentRenderer;
 import bzh.plealog.bioinfo.ui.feature.FeatureWebLinker;
 import bzh.plealog.bioinfo.ui.feature.TableCellButtonLinker;
 import bzh.plealog.bioinfo.ui.feature.TableCellButtonRenderer;
+import bzh.plealog.bioinfo.ui.resources.SVMessages;
 import bzh.plealog.blastviewer.BlastSummaryViewerController;
 import bzh.plealog.blastviewer.resources.BVMessages;
 
@@ -169,7 +171,8 @@ public class SRCOverviewPanel extends JPanel {
     setLayout(new BorderLayout());
 
     _cellLinker = new TableCellButtonLinker(
-        new MyFeatureWebLinker(), //will load default URLs to classifications located in Plealog-UI package 
+        //will load default URLs to classifications located ressources package
+        new MyFeatureWebLinker(BVMessages.class.getResourceAsStream("featureWebLink.conf")),  
         new JCheckBox(),
         SRCOverviewTableModel.URL_COLUMN_INDEX,
         SRCOverviewTableModel.ACCESS_COLUMN_INDEX);
@@ -363,14 +366,17 @@ public class SRCOverviewPanel extends JPanel {
   }
   private class MyFeatureWebLinker extends FeatureWebLinker{
 
-    public MyFeatureWebLinker() {
-      super();
+    public MyFeatureWebLinker(InputStream is) {
+      super(is);
     }
 
     @Override
     public String[] getData(String qualName, String qualValue) {
       String dbCode, dbId;
-      
+      int idx = qualValue.indexOf("] ");
+      if (idx!=-1) {
+        qualValue = qualValue.substring(idx+2);
+      }
       if (qualValue.startsWith(AnnotationDataModelConstants.ANNOTATION_CATEGORY.EC.getType())) {
         dbCode = AnnotationDataModelConstants.ANNOTATION_CATEGORY.EC.getEncoding();
         dbId = qualValue.substring(qualValue.indexOf(':')+1);
@@ -381,6 +387,14 @@ public class SRCOverviewPanel extends JPanel {
       }
       else if (qualValue.startsWith(AnnotationDataModelConstants.ANNOTATION_CATEGORY.IPR.getType())) {
         dbCode = AnnotationDataModelConstants.ANNOTATION_CATEGORY.IPR.getEncoding();
+        dbId = qualValue;
+      }
+      else if (qualValue.startsWith(AnnotationDataModelConstants.ANNOTATION_CATEGORY.PS.getType())) {
+        dbCode = AnnotationDataModelConstants.ANNOTATION_CATEGORY.PS.getEncoding();
+        dbId = qualValue;
+      }
+      else if (qualValue.startsWith(AnnotationDataModelConstants.ANNOTATION_CATEGORY.PFM.getType())) {
+        dbCode = AnnotationDataModelConstants.ANNOTATION_CATEGORY.PFM.getEncoding();
         dbId = qualValue;
       }
       else {
