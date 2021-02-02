@@ -99,6 +99,10 @@ public class OpenFileAction extends AbstractAction {
           }
         }
       }
+      
+      EZLogger.info(String.format(
+          BVMessages.getString("OpenFileAction.msg4"), fs.length));
+      
       if (sroMaster!=null) {
         if(notLoadedFiles!=0) {
           EZEnvironment.displayInfoMessage(EZEnvironment.getParentFrame(), 
@@ -110,6 +114,7 @@ public class OpenFileAction extends AbstractAction {
         JComponent viewer = BlastViewerOpener.prepareViewer(sroMaster);
         
         BlastViewerOpener.displayInternalFrame(viewer, fs[0].getName(), null);
+        EZLogger.info(BVMessages.getString("OpenFileAction.msg5"));
       }
       else {
         EZEnvironment.displayInfoMessage(EZEnvironment.getParentFrame(), 
