@@ -106,6 +106,7 @@ public class BVGenericSaveUtils {
       String fName = file.getName();
       String fExt = fName.substring(fName.lastIndexOf('.')+1);
       SROutput sro_to_save;
+      EZLogger.info(String.format("Preparing data to export (%d)", _iterationID));
       if (_iterationID>=0)
         sro_to_save = SRUtils.extractResult(_sro, _iterationID);
       else
@@ -113,6 +114,7 @@ public class BVGenericSaveUtils {
       SRWriter writer;
       //queries annotated with BCO is a particular feature, so handle that case
       int i, size = sro_to_save.countIteration();
+      EZLogger.info(String.format("Checking query features (%d)", size));
       boolean hasQueryAnnotation = false;
       for (i = 0; i < size; i++) {// loop on iterations
         if (sro_to_save.getIteration(i).getIterationQueryFeatureTable()!=null){
@@ -120,6 +122,7 @@ public class BVGenericSaveUtils {
           break;
         }
       }
+      EZLogger.info(String.format("Saving to file (%s)", fName));
       switch(fExt){
       case "csv":
         //Use ArrayList specifically to avoid UnsuportedOperationException when
@@ -208,6 +211,7 @@ public class BVGenericSaveUtils {
     }
     finally {
       EZEnvironment.setDefaultCursor();
+      EZLogger.info("Save done");
     }
   }
 }
