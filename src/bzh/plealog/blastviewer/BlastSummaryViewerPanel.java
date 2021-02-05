@@ -67,6 +67,7 @@ import bzh.plealog.bioinfo.ui.util.TableSearcherComponent;
 import bzh.plealog.bioinfo.ui.util.TableSearcherComponentAPI;
 import bzh.plealog.bioinfo.ui.util.TableSearcherComponentAction;
 import bzh.plealog.blastviewer.actions.summary.ChooseClassificationAction;
+import bzh.plealog.blastviewer.actions.summary.ViewQueryIprScanPredictionsAction;
 import bzh.plealog.blastviewer.actions.summary.GlobalFilterAction;
 import bzh.plealog.blastviewer.actions.summary.GlobalSaveAction;
 import bzh.plealog.blastviewer.actions.summary.ImportIprScanDomainsAction;
@@ -95,6 +96,7 @@ public class BlastSummaryViewerPanel extends JPanel {
   private GlobalSaveAction _saveAction;
   private ChooseClassificationAction _classifSelectAction;
   private OpenBasicViewerAction _openBasicViewerAction;
+  private ViewQueryIprScanPredictionsAction _viewQueryIPRAction;
   private MyImportIprScanDomainsAction _importIprScan;
   private BlastSummaryViewerController _bvController;
   private JButton _startSearchBtn;
@@ -122,7 +124,11 @@ public class BlastSummaryViewerPanel extends JPanel {
     _importIprScan.setTable(_summaryTable);
     _importIprScan.SetQuery(query);
     _openBasicViewerAction.setTable(_summaryTable);
-    
+    _viewQueryIPRAction.setTable(_summaryTable);
+
+    _openBasicViewerAction.setEnabled(false);
+    _viewQueryIPRAction.setEnabled(false);
+
     QueryBaseUI qBaseUI;
     qBaseUI = new QueryBaseUI(query);
     SummaryTableModel resultTableModel = new SummaryTableModel();
@@ -330,8 +336,7 @@ public class BlastSummaryViewerPanel extends JPanel {
     btn = tBar.add(_openBasicViewerAction);
     btn.setToolTipText(BVMessages.getString("BlastHitList.open.tip"));
     btn.setText(BVMessages.getString("BlastHitList.open.btn"));
-    
-    
+
     icon = EZEnvironment.getImageIcon("filterRes.png");
     if (icon != null) {
       _filterAction = new GlobalFilterAction("", icon);
@@ -367,6 +372,17 @@ public class BlastSummaryViewerPanel extends JPanel {
     btn = tBar.add(_importIprScan);
     btn.setToolTipText(BVMessages.getString("BlastHitList.iprscan.tip"));
     btn.setText(BVMessages.getString("BlastHitList.iprscan.btn"));
+    
+    icon = EZEnvironment.getImageIcon("view_features.png");
+    if (icon != null) {
+      _viewQueryIPRAction = new ViewQueryIprScanPredictionsAction("", icon);
+    } else {
+      _viewQueryIPRAction = new ViewQueryIprScanPredictionsAction(BVMessages.getString("BlastHitList.edit.btn"));
+    }
+    _viewQueryIPRAction.setEnabled(true);
+    btn = tBar.add(_viewQueryIPRAction);
+    btn.setToolTipText(BVMessages.getString("BlastHitList.edit.tip"));
+    btn.setText(BVMessages.getString("BlastHitList.edit.btn"));
     
     icon = EZEnvironment.getImageIcon("meta_path_24_24.png");
     if (icon != null) {
@@ -428,8 +444,13 @@ public class BlastSummaryViewerPanel extends JPanel {
         return;
       if (_summaryTable.getSelectedRowCount()!=1) {
         _hitListPane.resetDataModel();
+        _openBasicViewerAction.setEnabled(false);
+        _viewQueryIPRAction.setEnabled(false);
         return;
       }
+      _openBasicViewerAction.setEnabled(true);
+      _viewQueryIPRAction.setEnabled(true);
+
       int row = _summaryTable.getSelectedRow();
       if (row<0) {
         _hitListPane.resetDataModel();
