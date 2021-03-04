@@ -6,10 +6,14 @@
 
 This is the BlastViewer Tool. It aims at displaying in a graphical way results from the NCBI BLAST software.
 
-
 ![BlastViewer](doc/BlastViewer-multiquery-with-BCO.png)
 
 ![BlastViewer](doc/BlastViewer.png)
+
+Starting with release 5.5.0, BlastViewer is now capable of importing and displaying [InterProScan](https://interproscan-docs.readthedocs.io/en/latest/) predictions:
+
+![BlastViewer](doc/BlastViewer_Interproscan.png)
+
 
 ## Requirements
 
