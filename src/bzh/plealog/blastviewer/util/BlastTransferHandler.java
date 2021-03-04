@@ -24,9 +24,6 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.TransferHandler;
 
-import bzh.plealog.blastviewer.BlastViewerPanel;
-import bzh.plealog.blastviewer.resources.BVMessages;
-
 import com.plealog.genericapp.api.EZEnvironment;
 import com.plealog.genericapp.api.log.EZLogger;
 
@@ -61,7 +58,8 @@ public class BlastTransferHandler extends TransferHandler {
       try {
         lFiles = (List<?>) t.getTransferData(_fileFlavor);
         EZEnvironment.setWaitCursor();
-        new Fetcher(lFiles).start();
+        //new Fetcher(lFiles).start();
+        new FileLoadRunner(lFiles.toArray(new File[0])).start();
       } catch (Exception e) {
         EZLogger.warn("DragNDrop error: " + e);
       }
@@ -87,47 +85,6 @@ public class BlastTransferHandler extends TransferHandler {
       }
     }
     return false;
-  }
-
-  /**
-   * Load files in an external thread to avoid a UI lock.
-   */
-  private class Fetcher extends Thread {
-    private List<?> lFiles;
-
-    public Fetcher(List<?> lFiles) {
-      this.lFiles = lFiles;
-    }
-
-    private void doAction(){
-      BlastViewerPanel viewer;
-      File f;
-      String msg;
-      int i, size;
-
-      size = lFiles.size();
-      for (i = 0; i < size; i++) {
-        f = (File) lFiles.get(i);
-        msg = String.format(BVMessages.getString("BlastTransferHandler.msg1"), f.getName());
-        EZLogger.info(msg);
-        BlastViewerOpener.setHelperMessage(msg);
-        viewer = new BlastViewerPanel();
-        viewer.setContent(BlastViewerOpener.readBlastFile(f));
-        BlastViewerOpener.displayInternalFrame(viewer, f.getName(), null);
-      }
-    }
-    public void run() {
-      try {
-        doAction();
-      } catch (Throwable t) {
-        EZLogger.warn(BVMessages.getString("OpenFileAction.err")
-            + t.toString());
-      } finally {
-        EZEnvironment.setDefaultCursor();
-        BlastViewerOpener.cleanHelperMessage();
-      }
-    }
-    
   }
 
 }
