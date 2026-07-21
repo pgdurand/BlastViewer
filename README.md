@@ -1,6 +1,6 @@
 # BlastViewer
 
-[![License](https://img.shields.io/badge/license-Affero%20GPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.txt) [![](https://img.shields.io/badge/platform-Java--1.8+-yellow.svg)](http://www.oracle.com/technetwork/java/javase/downloads/index.html) [![](https://img.shields.io/badge/run_on-Linux--macOS--Windows-yellowgreen.svg)]()
+[![License](https://img.shields.io/badge/license-Affero%20GPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.txt) [![](https://img.shields.io/badge/platform-Java--17-yellow.svg)](http://www.oracle.com/technetwork/java/javase/downloads/index.html) [![](https://img.shields.io/badge/run_on-Linux--macOS--Windows-yellowgreen.svg)]()
 
 ## Introduction
 
@@ -17,9 +17,7 @@ Starting with release 5.5.0, BlastViewer is now capable of importing and display
 
 ## Requirements
 
-Use a [Java Virtual Machine](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 1.8+ from Oracle.  
-
-*Not tested with any other JVM providers but Oracle... so there is no guarantee that the software will work as expected if not using Oracle's JVM.*
+Use a Java Virtual Machine 17 or above from Oracle or OpenJDK.  
 
 ## User manual
 
@@ -44,4 +42,4 @@ So, during my holidays on Summer 2004, I started a wonderful story: the creation
 Korilog ceased its activities on June 2015, therefore I decided to release these UI components to the open source community... just in time for Christmas 2016! ;-) 
 
 --
-(c) 2003-2020 - Patrick G. Durand
+(c) 2003-2026 - Patrick G. Durand
