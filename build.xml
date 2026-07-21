@@ -53,32 +53,15 @@
   <mkdir  dir="${Ddoc.api}"/>
 </target>
 
-	<!-- ============================================================= -->
-<target name="is-java-eight">
-  <condition property="java.eight">
-  <equals arg1="${ant.java.version}" arg2="1.8"/>
-  </condition>
-</target>
-
-<target name="javac8" depends="is-java-eight" if="java.eight">
+<!-- ============================================================= -->
+<target name="javac" >
   <javac srcdir="${Dsrc}"
          destdir="${Dlib}"
          classpathref="class.path"
+         includeantruntime="false"
          debug="${compile.debug}"
-         optimize="${compile.optimize}"
-         >
-  </javac>
-</target>
-
-<!-- added for TravisCI -->
-<target name="javac9" depends="is-java-eight" unless="java.eight">
-  <javac srcdir="${Dsrc}"
-         destdir="${Dlib}"
-         classpathref="class.path"
-         debug="${compile.debug}"
-         optimize="${compile.optimize}"
-         >
-     <compilerarg line="--add-modules java.se.ee"/>
+         optimize="${compile.optimize}">
+     <compilerarg line="--add-modules java.xml"/>
   </javac>
 </target>
 
@@ -90,8 +73,7 @@
         <include name="bzh/plealog/blastviewer/**"/>
      </fileset>
    </copy>
-	<antcall target="javac8"/>
-	<antcall target="javac9"/>
+	<antcall target="javac"/>
   <copy todir="${Dlib}/bzh/plealog/blastviewer/">
     <fileset dir="${Dsrc}/bzh/plealog/blastviewer/">
       <include name="**/*properties"/>
@@ -124,30 +106,30 @@
 	  </jar>
 </target>
 
-	<!-- ============================================================= -->
-	<target name="makedistrib" depends="compile" >
-	    <jar destfile="${pbc.libJar}">
-	      <fileset dir="${Dlib}">
-	        <include name="bzh/plealog/blastviewer/**"/>
-	      </fileset>
-	      <restrict>
-	         <name name="**/*"/>
-	         <archives>
-	           <zips>
-	             <fileset dir="jar" includes="**/*.jar"/>
-	           </zips>
-	         </archives>
-	      </restrict>
-	      <manifest>
-	        <attribute name="Main-Class" value="bzh.plealog.blastviewer.BlastViewer"/>
-	        <attribute name="Built-By" value="Patrick G. Durand"/>
-	        <attribute name="Title" value="${prg.name}"/>
-	        <attribute name="Version" value="${prg.version}"/>
-	      </manifest>
-	    </jar>
-	    <jar destfile="${pbc.libJar}" update="true">
-	      <zipfileset dir="${basedir}" includes="*.txt"/>
-	    </jar>
-	</target>
+<!-- ============================================================= -->
+<target name="makedistrib" depends="compile" >
+    <jar destfile="${pbc.libJar}">
+      <fileset dir="${Dlib}">
+        <include name="bzh/plealog/blastviewer/**"/>
+      </fileset>
+      <restrict>
+          <name name="**/*"/>
+          <archives>
+            <zips>
+              <fileset dir="jar" includes="**/*.jar"/>
+            </zips>
+          </archives>
+      </restrict>
+      <manifest>
+        <attribute name="Main-Class" value="bzh.plealog.blastviewer.BlastViewer"/>
+        <attribute name="Built-By" value="Patrick G. Durand"/>
+        <attribute name="Title" value="${prg.name}"/>
+        <attribute name="Version" value="${prg.version}"/>
+      </manifest>
+    </jar>
+    <jar destfile="${pbc.libJar}" update="true">
+      <zipfileset dir="${basedir}" includes="*.txt"/>
+    </jar>
+</target>
 
 </project>
