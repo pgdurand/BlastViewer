@@ -158,7 +158,7 @@ public class HitQualityPolicyEditorPanel extends HitPolicyEditorBasePanel {
     c.setFont(DEF_FNT);
     c.setRenderer(new ComboBoxRenderer());
     for (int i = 0; i < ColorPolicyConfigImplem.QUALITY_SMILEY.length; i++) {
-      c.addItem(new Integer(i));
+      c.addItem(Integer.valueOf(i));
     }
     return c;
   }
